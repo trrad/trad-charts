@@ -600,10 +600,14 @@ export function RidgeDotplot() {
 
         thresholdLine.on('thresholdDrag', (event: CustomEvent) => {
           data.threshold = event.detail.value;
-          chart(selection as unknown as d3.Selection<Element, RidgeDotplotData, Element | null, unknown>);
           if (listeners['thresholdDrag']) {
             listeners['thresholdDrag'](event);
           }
+        });
+
+        thresholdLine.on('thresholdDragEnd', (event: CustomEvent) => {
+          data.threshold = event.detail.value;
+          chart(selection as unknown as d3.Selection<Element, RidgeDotplotData, Element | null, unknown>);
         });
 
         svg.selectAll('.threshold-labels').remove();

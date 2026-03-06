@@ -126,6 +126,12 @@ export function ThresholdLine() {
           line.attr('stroke-width', lineWidth).attr('opacity', 0.7);
           capTop.attr('stroke-width', 2);
           capBottom.attr('stroke-width', 2);
+
+          if (listeners['thresholdDragEnd']) {
+            const detail: ThresholdDragEventDetail = { value };
+            const customEvent = new CustomEvent('thresholdDragEnd', { detail });
+            listeners['thresholdDragEnd'](customEvent);
+          }
         });
 
       line.call(drag as unknown as d3.DragBehavior<SVGLineElement, unknown, unknown>);

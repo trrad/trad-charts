@@ -992,6 +992,11 @@ function ThresholdLine() {
         line.attr("stroke-width", lineWidth).attr("opacity", 0.7);
         capTop.attr("stroke-width", 2);
         capBottom.attr("stroke-width", 2);
+        if (listeners["thresholdDragEnd"]) {
+          const detail = { value };
+          const customEvent = new CustomEvent("thresholdDragEnd", { detail });
+          listeners["thresholdDragEnd"](customEvent);
+        }
       });
       line.call(drag3);
       capTop.call(drag3);
@@ -1596,10 +1601,13 @@ function RidgeDotplot() {
         thresholdGroup.call(thresholdLine);
         thresholdLine.on("thresholdDrag", (event) => {
           data.threshold = event.detail.value;
-          chart(selection);
           if (listeners["thresholdDrag"]) {
             listeners["thresholdDrag"](event);
           }
+        });
+        thresholdLine.on("thresholdDragEnd", (event) => {
+          data.threshold = event.detail.value;
+          chart(selection);
         });
         svg.selectAll(".threshold-labels").remove();
       } else {
