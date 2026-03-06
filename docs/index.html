@@ -315,9 +315,19 @@ d3.select('#container')
       .showStatistics(true)
       .showCIBounds(true);
 
-    d3.select('#ridge-dotplot')
-      .datum({ variants, threshold: 0.10 })
+    const ridgeContainer = d3.select('#ridge-dotplot');
+    let currentThreshold = 0.10;
+
+    ridgeContainer
+      .datum({ variants, threshold: currentThreshold })
       .call(ridge);
+
+    ridge.on('thresholdDrag', (event) => {
+      currentThreshold = event.detail.value;
+      ridgeContainer
+        .datum({ variants, threshold: currentThreshold })
+        .call(ridge);
+    });
   </script>
 </body>
 </html>
