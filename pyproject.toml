@@ -1,0 +1,20 @@
+[project]
+name = "trad-charts"
+version = "0.1.0"
+description = "Personal matplotlib theme and chart helpers — site-aligned purple chrome with Catppuccin data accents."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.8",
+    "cycler>=0.12",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "scipy",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.17,<0.10.0"]
+build-backend = "uv_build"
