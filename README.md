@@ -91,6 +91,47 @@ Titles: **3270 Nerd Font Propo** (retro-technical). Body: **IBM Plex Sans** (cle
 - Use semantic color for meaning (blue=positive, red=negative), cycle for categories
 - Watermark every published chart
 
+## D3 / Interactive
+
+Bayesian posterior visualizations with drag-to-adjust CI bounds, threshold lines, and plain-English tooltips. Same palette, dark theme.
+
+**[Live demo](https://trrad.github.io/trad-charts/)**
+
+### Components
+
+| Component | Description |
+|---|---|
+| `QuantileDots` | Quantile dotplot with KDE violin overlay, threshold-split coloring |
+| `RidgeDotplot` | Multi-variant ridge comparison with draggable CI, dual $/% axes |
+| `DraggableCIBounds` | Interactive CI bound handles |
+| `ThresholdLine` | Draggable threshold reference line |
+| `Tooltip` | Context-aware tooltip with plain-English probability statements |
+| `HintArea` | Progressive disclosure hints |
+| `ContextMenu` | Right-click context menu |
+
+### Usage
+
+```js
+import { RidgeDotplot } from 'trad-charts-d3';
+
+const ridge = RidgeDotplot()
+  .width(900)
+  .numDots(20)
+  .showViolin(true);
+
+d3.select('#container')
+  .datum({ variants, threshold: 0.10 })
+  .call(ridge);
+```
+
+### Build from source
+
+```bash
+cd d3 && npm install && npm run build
+```
+
+Output: `d3/dist/trad-charts-d3.js` (ESM bundle, D3 as peer dep).
+
 ## License
 
 MIT
