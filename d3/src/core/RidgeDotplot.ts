@@ -666,6 +666,7 @@ export function RidgeDotplot() {
           .attr('fill', 'none');
 
         xAxisGroup.selectAll('.threshold-tick-label').remove();
+        xAxisGroup.selectAll('.editable-label').remove();
         xAxisGroup.selectAll('.editable-label-input-container').remove();
 
         const thresholdLabel = xAxisGroup
@@ -712,6 +713,7 @@ export function RidgeDotplot() {
       } else {
         xAxisGroup.selectAll('.threshold-tick-line').remove();
         xAxisGroup.selectAll('.threshold-tick-label').remove();
+        xAxisGroup.selectAll('.editable-label').remove();
         xAxisGroup.selectAll('.threshold-connector').remove();
 
         xAxisGroup.selectAll('.tick text').style('opacity', '1');
@@ -803,6 +805,7 @@ export function RidgeDotplot() {
               .attr('fill', 'none');
 
             topAxisGroup.selectAll('.threshold-tick-label').remove();
+            topAxisGroup.selectAll('.editable-label').remove();
             topAxisGroup.selectAll('.editable-label-input-container').remove();
 
             const topThresholdLabel = topAxisGroup
@@ -876,6 +879,7 @@ export function RidgeDotplot() {
           } else {
             topAxisGroup.selectAll('.threshold-tick-line').remove();
             topAxisGroup.selectAll('.threshold-tick-label').remove();
+            topAxisGroup.selectAll('.editable-label').remove();
             topAxisGroup.selectAll('.threshold-connector').remove();
 
             topAxisGroup.selectAll('.tick text').style('opacity', '1');

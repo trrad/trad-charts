@@ -1627,6 +1627,7 @@ function RidgeDotplot() {
           `M ${thresholdX} 12 L ${thresholdX} ${labelY - 10} L ${thresholdX + labelOffset} ${labelY - 2}`
         ).attr("stroke", theme.textMuted).attr("stroke-width", 1.5).attr("fill", "none");
         xAxisGroup.selectAll(".threshold-tick-label").remove();
+        xAxisGroup.selectAll(".editable-label").remove();
         xAxisGroup.selectAll(".editable-label-input-container").remove();
         const thresholdLabel = xAxisGroup.append("text").attr("class", "threshold-tick-label").attr("x", thresholdX + labelOffset).attr("y", labelY).attr("text-anchor", "start");
         makeEditable(thresholdLabel, {
@@ -1665,6 +1666,7 @@ function RidgeDotplot() {
       } else {
         xAxisGroup.selectAll(".threshold-tick-line").remove();
         xAxisGroup.selectAll(".threshold-tick-label").remove();
+        xAxisGroup.selectAll(".editable-label").remove();
         xAxisGroup.selectAll(".threshold-connector").remove();
         xAxisGroup.selectAll(".tick text").style("opacity", "1");
       }
@@ -1710,6 +1712,7 @@ function RidgeDotplot() {
               `M ${thresholdX} -12 L ${thresholdX} ${labelY + 10} L ${thresholdX + labelOffset} ${labelY + 2}`
             ).attr("stroke", theme.textMuted).attr("stroke-width", 1.5).attr("fill", "none");
             topAxisGroup.selectAll(".threshold-tick-label").remove();
+            topAxisGroup.selectAll(".editable-label").remove();
             topAxisGroup.selectAll(".editable-label-input-container").remove();
             const topThresholdLabel = topAxisGroup.append("text").attr("class", "threshold-tick-label").attr("x", thresholdX + labelOffset).attr("y", labelY).attr("text-anchor", "start");
             makeEditable(topThresholdLabel, {
@@ -1765,6 +1768,7 @@ function RidgeDotplot() {
           } else {
             topAxisGroup.selectAll(".threshold-tick-line").remove();
             topAxisGroup.selectAll(".threshold-tick-label").remove();
+            topAxisGroup.selectAll(".editable-label").remove();
             topAxisGroup.selectAll(".threshold-connector").remove();
             topAxisGroup.selectAll(".tick text").style("opacity", "1");
           }
