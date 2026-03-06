@@ -1,6 +1,8 @@
 # trad-charts
 
-Personal matplotlib theme and chart helpers. Site-aligned purple chrome ([tradcliffe.com](https://tradcliffe.com)) with [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) data accents.
+Matplotlib + D3 chart library. Site-aligned purple chrome ([tradcliffe.com](https://tradcliffe.com)) with [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) data accents.
+
+**[Live demo — interactive D3 charts + palette reference](https://trrad.github.io/trad-charts/)**
 
 ![Showcase](examples/showcase.png)
 
