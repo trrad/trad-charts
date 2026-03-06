@@ -13,9 +13,12 @@ export { ThresholdLine } from './core/ThresholdLine.ts';
 export { Tooltip } from './core/Tooltip.ts';
 export { HintArea } from './core/HintArea.ts';
 export { ContextMenu } from './core/ContextMenu.ts';
+export { ForestPlot } from './core/ForestPlot.ts';
+export { CIBand } from './core/CIBand.ts';
+export { DensityCompare } from './core/DensityCompare.ts';
 
 // Theme
-export { theme, fonts, defaultColorScheme } from './theme.ts';
+export { theme, fonts, defaultColorScheme, seriesColors } from './theme.ts';
 export type { TradTheme } from './theme.ts';
 
 // Types
@@ -24,6 +27,11 @@ export type {
   RidgeDotplotData,
   VariantData,
   SortedSamplePair,
+  ForestPlotData,
+  ForestPlotItem,
+  CIBandData,
+  DensityCompareData,
+  DensityCompareSeries,
   ColorScheme,
   QuantileDotsOptions,
   CIBoundsOptions,
@@ -36,6 +44,11 @@ export type {
   CIDragEventDetail,
   ThresholdDragEventDetail,
   VariantClickEventDetail,
+  ForestItemHoverEventDetail,
+  ForestItemClickEventDetail,
+  BandHoverEventDetail,
+  DensityHoverEventDetail,
+  SeriesToggleEventDetail,
 } from './types/index.ts';
 
 // Utility functions

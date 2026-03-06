@@ -101,12 +101,12 @@ function computeKDE(samples, domain, numPoints = 50) {
   if (samples.length < 10) {
     console.warn("computeKDE: very few samples (< 10), KDE may be unreliable");
   }
-  const [min, max3] = domain;
-  if (!Number.isFinite(min) || !Number.isFinite(max3)) {
-    throw new Error(`computeKDE: domain must contain finite values, got [${min}, ${max3}]`);
+  const [min2, max4] = domain;
+  if (!Number.isFinite(min2) || !Number.isFinite(max4)) {
+    throw new Error(`computeKDE: domain must contain finite values, got [${min2}, ${max4}]`);
   }
-  if (min >= max3) {
-    throw new Error(`computeKDE: domain min (${min}) must be < max (${max3})`);
+  if (min2 >= max4) {
+    throw new Error(`computeKDE: domain min (${min2}) must be < max (${max4})`);
   }
   const sorted = [...samples].sort((a, b) => a - b);
   const n = sorted.length;
@@ -116,7 +116,7 @@ function computeKDE(samples, domain, numPoints = 50) {
   const sigma = Math.min(d32.deviation(samples) || 1, iqr / 1.34);
   const bandwidth = 1.06 * sigma * Math.pow(n, -0.2);
   if (bandwidth <= 0 || !Number.isFinite(bandwidth)) {
-    const range = max3 - min;
+    const range = max4 - min2;
     const fallbackBandwidth = range / 20;
     console.warn(
       `computeKDE: invalid bandwidth (${bandwidth}), using fallback (${fallbackBandwidth})`
@@ -126,14 +126,14 @@ function computeKDE(samples, domain, numPoints = 50) {
   return computeKDEWithBandwidth(samples, domain, bandwidth, numPoints);
 }
 function computeKDEWithBandwidth(samples, domain, bandwidth, numPoints) {
-  const [min, max3] = domain;
+  const [min2, max4] = domain;
   const kernel = (x) => {
     const u = x / bandwidth;
     return Math.abs(u) <= 1 ? 0.75 * (1 - u * u) / bandwidth : 0;
   };
   const points = Array.from(
     { length: numPoints },
-    (_, i) => min + i / (numPoints - 1) * (max3 - min)
+    (_, i) => min2 + i / (numPoints - 1) * (max4 - min2)
   );
   return points.map((x) => ({
     value: x,
@@ -294,6 +294,7 @@ var theme = {
   negative: palette_default.accents.red,
   neutral: palette_default.accents.blue,
   reference: palette_default.overlays.overlay0,
+  warning: palette_default.accents.yellow,
   // Interactive / muted
   muted: palette_default.overlays.overlay1,
   disabled: palette_default.overlays.overlay0,
@@ -332,6 +333,16 @@ var theme = {
   inputBorder: palette_default.text.subtext0,
   inputBg: palette_default.surfaces.surface0
 };
+var seriesColors = [
+  palette_default.accents.blue,
+  palette_default.accents.peach,
+  palette_default.accents.green,
+  palette_default.accents.red,
+  palette_default.accents.yellow,
+  palette_default.accents.teal,
+  palette_default.accents.flamingo,
+  palette_default.accents.sky
+];
 var defaultColorScheme = {
   above: palette_default.accents.green,
   below: palette_default.overlays.overlay1,
@@ -508,7 +519,7 @@ function Tooltip() {
       html += `<div style="font-weight: 600; margin-bottom: ${content.lines.length > 0 ? "8px" : "0"}; padding-right: ${pinned ? "20px" : "0"}">${content.title}</div>`;
     }
     if (content.lines.length > 0) {
-      html += content.lines.map((line) => `<div style="margin: 4px 0; color: ${theme.tooltipTextSecondary};">${line}</div>`).join("");
+      html += content.lines.map((line3) => `<div style="margin: 4px 0; color: ${theme.tooltipTextSecondary};">${line3}</div>`).join("");
     }
     container.html(html);
     if (pinned) {
@@ -711,7 +722,7 @@ function QuantileDots() {
           cachedKDE = kde;
           const maxDensity = d35.max(kde, (d) => d.density) || 1;
           const heightScale = d35.scaleLinear().domain([0, maxDensity]).range([0, height * 0.9]);
-          const area2 = d35.area().x((d) => xScale(d.value)).y0(height - 5).y1((d) => height - heightScale(d.density) - 5).curve(d35.curveBasis);
+          const area4 = d35.area().x((d) => xScale(d.value)).y0(height - 5).y1((d) => height - heightScale(d.density) - 5).curve(d35.curveBasis);
           svg.selectAll(".violin-bg").remove();
           svg.selectAll(".violin-bg-ci").remove();
           svg.selectAll(".hist-bar").remove();
@@ -722,7 +733,7 @@ function QuantileDots() {
               kdeBelow = [...kdeBelow, { value: threshold, density: thresholdDensity }];
             }
             const probBelow = cachedSorted.filter((s) => s <= threshold).length / cachedSorted.length;
-            svg.selectAll(".violin-segment-below").data(kdeBelow.length > 0 ? [kdeBelow] : []).join("path").attr("class", "violin-segment-below").attr("d", area2).attr("fill", theme.violinBelow).attr("stroke", theme.violinBelowStroke).attr("stroke-width", 1).attr("opacity", 0.85).attr("pointer-events", "all").style("cursor", "pointer").on("mouseover", function() {
+            svg.selectAll(".violin-segment-below").data(kdeBelow.length > 0 ? [kdeBelow] : []).join("path").attr("class", "violin-segment-below").attr("d", area4).attr("fill", theme.violinBelow).attr("stroke", theme.violinBelowStroke).attr("stroke-width", 1).attr("opacity", 0.85).attr("pointer-events", "all").style("cursor", "pointer").on("mouseover", function() {
               d35.select(this).attr("opacity", 1).attr("stroke-width", 1.5);
             }).on("mouseout", function() {
               d35.select(this).attr("opacity", 0.85).attr("stroke-width", 1);
@@ -732,7 +743,7 @@ function QuantileDots() {
               kdeAbove = [{ value: threshold, density: thresholdDensity }, ...kdeAbove];
             }
             const probAbove = cachedSorted.filter((s) => s > threshold).length / cachedSorted.length;
-            svg.selectAll(".violin-segment-above").data(kdeAbove.length > 0 ? [kdeAbove] : []).join("path").attr("class", "violin-segment-above").attr("d", area2).attr("fill", theme.violinAbove).attr("stroke", theme.violinAboveStroke).attr("stroke-width", 1).attr("opacity", 0.85).attr("pointer-events", "all").style("cursor", "pointer").on("mouseover", function() {
+            svg.selectAll(".violin-segment-above").data(kdeAbove.length > 0 ? [kdeAbove] : []).join("path").attr("class", "violin-segment-above").attr("d", area4).attr("fill", theme.violinAbove).attr("stroke", theme.violinAboveStroke).attr("stroke-width", 1).attr("opacity", 0.85).attr("pointer-events", "all").style("cursor", "pointer").on("mouseover", function() {
               d35.select(this).attr("opacity", 1).attr("stroke-width", 1.5);
             }).on("mouseout", function() {
               d35.select(this).attr("opacity", 0.85).attr("stroke-width", 1);
@@ -751,7 +762,7 @@ function QuantileDots() {
               svg.selectAll(".segment-label-above").remove();
             }
           } else {
-            svg.selectAll(".violin-segment-single").data([kde]).join("path").attr("class", "violin-segment-single").attr("d", area2).attr("fill", theme.violinNeutral).attr("opacity", 0.8);
+            svg.selectAll(".violin-segment-single").data([kde]).join("path").attr("class", "violin-segment-single").attr("d", area4).attr("fill", theme.violinNeutral).attr("opacity", 0.8);
             svg.selectAll(".violin-segment-below").remove();
             svg.selectAll(".violin-segment-above").remove();
             svg.selectAll(".segment-label-below").remove();
@@ -965,13 +976,13 @@ function ThresholdLine() {
       if (group.empty()) {
         group = container.append("g").attr("class", "threshold-line-group");
       }
-      const line = group.selectAll("line.threshold-line").data([value]).join("line").attr("class", "threshold-line").attr("x1", xPos).attr("x2", xPos).attr("y1", yMin).attr("y2", yMax).attr("stroke", lineColor).attr("stroke-width", lineWidth).attr("opacity", 0.7).style("cursor", "ew-resize");
+      const line3 = group.selectAll("line.threshold-line").data([value]).join("line").attr("class", "threshold-line").attr("x1", xPos).attr("x2", xPos).attr("y1", yMin).attr("y2", yMax).attr("stroke", lineColor).attr("stroke-width", lineWidth).attr("opacity", 0.7).style("cursor", "ew-resize");
       const capTop = group.selectAll("line.threshold-cap-top").data([value]).join("line").attr("class", "threshold-cap-top").attr("x1", xPos - 4).attr("x2", xPos + 4).attr("y1", yMin).attr("y2", yMin).attr("stroke", lineColor).attr("stroke-width", 2).attr("stroke-linecap", "round").style("cursor", "ew-resize");
       const capBottom = group.selectAll("line.threshold-cap-bottom").data([value]).join("line").attr("class", "threshold-cap-bottom").attr("x1", xPos - 4).attr("x2", xPos + 4).attr("y1", yMax).attr("y2", yMax).attr("stroke", lineColor).attr("stroke-width", 2).attr("stroke-linecap", "round").style("cursor", "ew-resize");
       group.selectAll("text.threshold-label-top").remove();
       group.selectAll("text.threshold-label-bottom").remove();
       const drag3 = d36.drag().on("start", function() {
-        line.attr("stroke-width", lineWidth * 1.5).attr("opacity", 0.9);
+        line3.attr("stroke-width", lineWidth * 1.5).attr("opacity", 0.9);
         capTop.attr("stroke-width", 3);
         capBottom.attr("stroke-width", 3);
       }).on("drag", function(event) {
@@ -982,14 +993,14 @@ function ThresholdLine() {
         const newX = scale(value);
         capTop.attr("x1", newX - 4).attr("x2", newX + 4);
         capBottom.attr("x1", newX - 4).attr("x2", newX + 4);
-        line.attr("x1", newX).attr("x2", newX);
+        line3.attr("x1", newX).attr("x2", newX);
         if (listeners["thresholdDrag"]) {
           const detail = { value };
           const customEvent = new CustomEvent("thresholdDrag", { detail });
           listeners["thresholdDrag"](customEvent);
         }
       }).on("end", function() {
-        line.attr("stroke-width", lineWidth).attr("opacity", 0.7);
+        line3.attr("stroke-width", lineWidth).attr("opacity", 0.7);
         capTop.attr("stroke-width", 2);
         capBottom.attr("stroke-width", 2);
         if (listeners["thresholdDragEnd"]) {
@@ -998,7 +1009,7 @@ function ThresholdLine() {
           listeners["thresholdDragEnd"](customEvent);
         }
       });
-      line.call(drag3);
+      line3.call(drag3);
       capTop.call(drag3);
       capBottom.call(drag3);
     });
@@ -1408,10 +1419,10 @@ function RidgeDotplot() {
       const mean4 = d38.mean(allSamples) || 0;
       const stdDev = d38.deviation(allSamples) || 0;
       const filteredSamples = allSamples.filter((s) => Math.abs(s - mean4) <= 3 * stdDev);
-      const extent3 = d38.extent(filteredSamples.length > 0 ? filteredSamples : allSamples);
-      const range = extent3[1] - extent3[0];
+      const extent4 = d38.extent(filteredSamples.length > 0 ? filteredSamples : allSamples);
+      const range = extent4[1] - extent4[0];
       const padding = range * 0.1;
-      const xScale = scale || d38.scaleLinear().domain([extent3[0] - padding, extent3[1] + padding]).range([margin.left, effectiveWidth - margin.right]);
+      const xScale = scale || d38.scaleLinear().domain([extent4[0] - padding, extent4[1] + padding]).range([margin.left, effectiveWidth - margin.right]);
       const yScale = d38.scaleBand().domain(variants.map((v) => v.name)).range([margin.top, effectiveHeight - margin.bottom]).paddingInner(ridgeSpacing / computedRidgeHeight).paddingOuter(0.1);
       let svg = container.select("svg.ridge-dotplot-svg");
       if (svg.empty()) {
@@ -1545,9 +1556,9 @@ function RidgeDotplot() {
           const labelGroup = ridge.selectAll(".mean-label-group").data([variantMean]).join("g").attr("class", "mean-label-group").attr("transform", `translate(${labelX}, ${labelY})`);
           labelGroup.selectAll("text").remove();
           labelGroup.append("text").attr("x", 0).attr("y", 0).attr("font-family", fonts.body).attr("font-size", "10px").attr("font-weight", "500").attr("fill", theme.textMuted).attr("text-anchor", "start").text("expected value");
-          const line2 = labelGroup.append("text").attr("x", 0).attr("y", 15).attr("font-family", fonts.body).attr("text-anchor", "start");
-          line2.append("tspan").attr("font-size", "13px").attr("font-weight", "700").attr("fill", meanColor).text(dollarLift);
-          line2.append("tspan").attr("font-size", "13px").attr("font-weight", "700").attr("fill", theme.neutral).text("/user");
+          const line22 = labelGroup.append("text").attr("x", 0).attr("y", 15).attr("font-family", fonts.body).attr("text-anchor", "start");
+          line22.append("tspan").attr("font-size", "13px").attr("font-weight", "700").attr("fill", meanColor).text(dollarLift);
+          line22.append("tspan").attr("font-size", "13px").attr("font-weight", "700").attr("fill", theme.neutral).text("/user");
           const directionWord = effectMean >= 0 ? "increase" : "decrease";
           labelGroup.append("text").attr("x", 0).attr("y", 30).attr("font-family", fonts.body).attr("font-size", "13px").attr("font-weight", "700").attr("fill", meanColor).attr("text-anchor", "start").text(`${triangle}${pctValue}% ${directionWord}`);
           ridge.selectAll(".median-label-top").remove();
@@ -2130,9 +2141,641 @@ function ContextMenu() {
   };
   return menu;
 }
+
+// src/core/ForestPlot.ts
+import * as d311 from "d3";
+function ForestPlot() {
+  let width = 600;
+  let height = null;
+  let rowHeight = 32;
+  let margin = { top: 30, right: 30, bottom: 40, left: 140 };
+  let sortByEstimate = false;
+  let title = null;
+  let xlabel = null;
+  let nullValue = 0;
+  let highlightedIndex = null;
+  const listeners = {};
+  const tooltip = Tooltip();
+  function chart(selection) {
+    selection.each(function(data) {
+      const container = d311.select(this);
+      let items = [...data.items];
+      if (sortByEstimate) {
+        items.sort((a, b) => b.estimate - a.estimate);
+      }
+      const effectiveNullValue = data.nullValue ?? nullValue;
+      const totalHeight = height ?? items.length * rowHeight + margin.top + margin.bottom;
+      const xMin = d311.min(items, (d) => d.ciLower);
+      const xMax = d311.max(items, (d) => d.ciUpper);
+      const xScale = d311.scaleLinear().domain([xMin, xMax]).nice().range([margin.left, width - margin.right]);
+      const yScale = d311.scaleBand().domain(items.map((d) => d.label)).range([margin.top, totalHeight - margin.bottom]).padding(0.3);
+      let svg = container.select("svg.forest-plot-svg");
+      if (svg.empty()) {
+        svg = container.append("svg").attr("class", "forest-plot-svg").attr("width", width).attr("height", totalHeight);
+      } else {
+        svg.attr("width", width).attr("height", totalHeight);
+      }
+      const xAxis = d311.axisBottom(xScale).ticks(6);
+      let xAxisGroup = svg.select(".x-axis");
+      if (xAxisGroup.empty()) {
+        xAxisGroup = svg.append("g").attr("class", "x-axis");
+      }
+      xAxisGroup.attr("transform", `translate(0,${totalHeight - margin.bottom})`).call(xAxis).selectAll("text").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px");
+      xAxisGroup.selectAll(".tick line").attr("stroke", theme.textSecondary);
+      xAxisGroup.select(".domain").attr("stroke", theme.textSecondary);
+      const yAxis = d311.axisLeft(yScale).tickSize(0);
+      let yAxisGroup = svg.select(".y-axis");
+      if (yAxisGroup.empty()) {
+        yAxisGroup = svg.append("g").attr("class", "y-axis");
+      }
+      yAxisGroup.attr("transform", `translate(${margin.left},0)`).call(yAxis).selectAll("text").attr("fill", theme.text).attr("font-family", fonts.body).attr("font-size", "12px");
+      yAxisGroup.select(".domain").remove();
+      let refLine = svg.select(".reference-line");
+      if (refLine.empty()) {
+        refLine = svg.append("line").attr("class", "reference-line");
+      }
+      refLine.attr("x1", xScale(effectiveNullValue)).attr("x2", xScale(effectiveNullValue)).attr("y1", margin.top).attr("y2", totalHeight - margin.bottom).attr("stroke", theme.reference).attr("stroke-dasharray", "4,3").attr("opacity", 0.6);
+      const rows = svg.selectAll(".forest-row").data(items, (d) => d.label).join("g").attr("class", "forest-row").style("cursor", "pointer");
+      rows.selectAll(".ci-whisker").data((d) => [d]).join("line").attr("class", "ci-whisker").attr("x1", (d) => xScale(d.ciLower)).attr("x2", (d) => xScale(d.ciUpper)).attr("y1", (d) => yScale(d.label) + yScale.bandwidth() / 2).attr("y2", (d) => yScale(d.label) + yScale.bandwidth() / 2).attr("stroke", (d) => d.estimate >= effectiveNullValue ? theme.positive : theme.negative).attr("stroke-width", 2);
+      rows.selectAll(".endcap-left").data((d) => [d]).join("line").attr("class", "endcap-left").attr("x1", (d) => xScale(d.ciLower)).attr("x2", (d) => xScale(d.ciLower)).attr("y1", (d) => yScale(d.label) + yScale.bandwidth() / 2 - 4).attr("y2", (d) => yScale(d.label) + yScale.bandwidth() / 2 + 4).attr("stroke", (d) => d.estimate >= effectiveNullValue ? theme.positive : theme.negative).attr("stroke-width", 2);
+      rows.selectAll(".endcap-right").data((d) => [d]).join("line").attr("class", "endcap-right").attr("x1", (d) => xScale(d.ciUpper)).attr("x2", (d) => xScale(d.ciUpper)).attr("y1", (d) => yScale(d.label) + yScale.bandwidth() / 2 - 4).attr("y2", (d) => yScale(d.label) + yScale.bandwidth() / 2 + 4).attr("stroke", (d) => d.estimate >= effectiveNullValue ? theme.positive : theme.negative).attr("stroke-width", 2);
+      rows.selectAll(".estimate-dot").data((d) => [d]).join("circle").attr("class", "estimate-dot").attr("cx", (d) => xScale(d.estimate)).attr("cy", (d) => yScale(d.label) + yScale.bandwidth() / 2).attr("r", 5).attr("fill", (d) => d.estimate >= effectiveNullValue ? theme.positive : theme.negative);
+      rows.attr("opacity", (d, i) => {
+        if (highlightedIndex === null) return 1;
+        return i === highlightedIndex ? 1 : 0.3;
+      });
+      rows.on("mouseover", function(event, d) {
+        const rowGroup = d311.select(this);
+        rowGroup.select(".estimate-dot").attr("r", 7);
+        rowGroup.select(".ci-whisker").attr("stroke-width", 3);
+        const lines = [
+          `Estimate: ${d.estimate.toFixed(3)}`,
+          `95% CI: [${d.ciLower.toFixed(3)}, ${d.ciUpper.toFixed(3)}]`,
+          d.estimate >= effectiveNullValue ? "Positive effect" : "Negative effect"
+        ];
+        tooltip.show(
+          {
+            title: d.label,
+            lines
+          },
+          event
+        );
+        if (listeners["itemHover"]) {
+          const detail = {
+            label: d.label,
+            estimate: d.estimate,
+            ciLower: d.ciLower,
+            ciUpper: d.ciUpper,
+            index: items.indexOf(d)
+          };
+          const customEvent = new CustomEvent("itemHover", { detail });
+          listeners["itemHover"](customEvent);
+        }
+      }).on("mouseout", function() {
+        const rowGroup = d311.select(this);
+        rowGroup.select(".estimate-dot").attr("r", 5);
+        rowGroup.select(".ci-whisker").attr("stroke-width", 2);
+        tooltip.scheduleHide();
+      }).on("click", function(event, d) {
+        const clickedIndex = items.indexOf(d);
+        if (highlightedIndex === clickedIndex) {
+          highlightedIndex = null;
+        } else {
+          highlightedIndex = clickedIndex;
+        }
+        rows.attr("opacity", (_d, i) => {
+          if (highlightedIndex === null) return 1;
+          return i === highlightedIndex ? 1 : 0.3;
+        });
+        if (listeners["itemClick"]) {
+          const detail = {
+            label: d.label,
+            estimate: d.estimate,
+            ciLower: d.ciLower,
+            ciUpper: d.ciUpper,
+            index: clickedIndex
+          };
+          const customEvent = new CustomEvent("itemClick", { detail });
+          listeners["itemClick"](customEvent);
+        }
+      });
+      svg.selectAll(".chart-title").remove();
+      if (title) {
+        svg.append("text").attr("class", "chart-title").attr("x", width / 2).attr("y", margin.top / 2).attr("text-anchor", "middle").attr("font-family", fonts.title).attr("font-size", "14px").attr("fill", theme.text).text(title);
+      }
+      svg.selectAll(".x-label").remove();
+      if (xlabel) {
+        svg.append("text").attr("class", "x-label").attr("x", (margin.left + width - margin.right) / 2).attr("y", totalHeight - 6).attr("text-anchor", "middle").attr("font-family", fonts.body).attr("font-size", "12px").attr("fill", theme.textSecondary).text(xlabel);
+      }
+    });
+  }
+  chart.width = function(value) {
+    if (arguments.length === 0) return width;
+    width = value;
+    return chart;
+  };
+  chart.height = function(value) {
+    if (arguments.length === 0) return height;
+    height = value ?? null;
+    return chart;
+  };
+  chart.rowHeight = function(value) {
+    if (arguments.length === 0) return rowHeight;
+    rowHeight = value;
+    return chart;
+  };
+  chart.margin = function(value) {
+    if (arguments.length === 0) return margin;
+    margin = value;
+    return chart;
+  };
+  chart.sortByEstimate = function(value) {
+    if (arguments.length === 0) return sortByEstimate;
+    sortByEstimate = value;
+    return chart;
+  };
+  chart.title = function(value) {
+    if (arguments.length === 0) return title;
+    title = value ?? null;
+    return chart;
+  };
+  chart.xlabel = function(value) {
+    if (arguments.length === 0) return xlabel;
+    xlabel = value ?? null;
+    return chart;
+  };
+  chart.nullValue = function(value) {
+    if (arguments.length === 0) return nullValue;
+    nullValue = value;
+    return chart;
+  };
+  chart.on = function(event, handler) {
+    if (handler === null) {
+      delete listeners[event];
+    } else {
+      listeners[event] = handler;
+    }
+    return chart;
+  };
+  return chart;
+}
+
+// src/core/CIBand.ts
+import * as d312 from "d3";
+var Z_SCORES = {
+  0.5: 0.6745,
+  0.8: 1.2816,
+  0.9: 1.6449,
+  0.95: 1.96,
+  0.99: 2.5758
+};
+function CIBand() {
+  let width = 600;
+  let height = 300;
+  let margin = { top: 30, right: 30, bottom: 40, left: 60 };
+  let showTruth = true;
+  let showObservations = true;
+  let title = null;
+  let xlabel = null;
+  let ylabel = null;
+  const listeners = {};
+  const tooltip = Tooltip();
+  function chart(selection) {
+    selection.each(function(data) {
+      const container = d312.select(this);
+      const { x, mean: mean4, std } = data;
+      const ciLevels = data.ciLevels ?? [0.5, 0.95];
+      const zNarrow = Z_SCORES[ciLevels[0]];
+      const zWide = Z_SCORES[ciLevels[1]];
+      const ciNarrowLower = x.map((_, i) => mean4[i] - zNarrow * std[i]);
+      const ciNarrowUpper = x.map((_, i) => mean4[i] + zNarrow * std[i]);
+      const ciWideLower = x.map((_, i) => mean4[i] - zWide * std[i]);
+      const ciWideUpper = x.map((_, i) => mean4[i] + zWide * std[i]);
+      const widePoints = x.map((xVal, i) => ({ x: xVal, low: ciWideLower[i], high: ciWideUpper[i] }));
+      const narrowPoints = x.map((xVal, i) => ({ x: xVal, low: ciNarrowLower[i], high: ciNarrowUpper[i] }));
+      const meanPoints = x.map((xVal, i) => ({ x: xVal, y: mean4[i] }));
+      const xScale = d312.scaleLinear().domain(d312.extent(x)).range([margin.left, width - margin.right]);
+      const yExtentValues = [...ciWideLower, ...ciWideUpper];
+      if (showTruth && data.truth) {
+        yExtentValues.push(...data.truth);
+      }
+      if (showObservations && data.observations) {
+        yExtentValues.push(...data.observations.map((o) => o.y));
+      }
+      const yScale = d312.scaleLinear().domain(d312.extent(yExtentValues)).nice().range([height - margin.bottom, margin.top]);
+      let svg = container.select("svg.ci-band-svg");
+      if (svg.empty()) {
+        svg = container.append("svg").attr("class", "ci-band-svg").attr("width", width).attr("height", height);
+      } else {
+        svg.attr("width", width).attr("height", height);
+      }
+      const yTicks = yScale.ticks(6);
+      svg.selectAll(".grid-line").data(yTicks).join("line").attr("class", "grid-line").attr("x1", margin.left).attr("x2", width - margin.right).attr("y1", (d) => yScale(d)).attr("y2", (d) => yScale(d)).attr("stroke", theme.grid).attr("opacity", theme.gridAlpha).attr("stroke-dasharray", "2,2");
+      const xAxis = d312.axisBottom(xScale).ticks(8);
+      let xAxisGroup = svg.select(".x-axis");
+      if (xAxisGroup.empty()) {
+        xAxisGroup = svg.append("g").attr("class", "x-axis");
+      }
+      xAxisGroup.attr("transform", `translate(0,${height - margin.bottom})`).call(xAxis).selectAll("text").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px");
+      xAxisGroup.selectAll(".tick line").attr("stroke", theme.textSecondary);
+      xAxisGroup.select(".domain").attr("stroke", theme.textSecondary);
+      const yAxis = d312.axisLeft(yScale).ticks(6);
+      let yAxisGroup = svg.select(".y-axis");
+      if (yAxisGroup.empty()) {
+        yAxisGroup = svg.append("g").attr("class", "y-axis");
+      }
+      yAxisGroup.attr("transform", `translate(${margin.left},0)`).call(yAxis).selectAll("text").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px");
+      yAxisGroup.selectAll(".tick line").attr("stroke", theme.textSecondary);
+      yAxisGroup.select(".domain").attr("stroke", theme.textSecondary);
+      const wideArea = d312.area().x((d) => xScale(d.x)).y0((d) => yScale(d.low)).y1((d) => yScale(d.high)).curve(d312.curveMonotoneX);
+      svg.selectAll(".ci-wide").data([widePoints]).join("path").attr("class", "ci-wide").attr("d", wideArea).attr("fill", theme.neutral).attr("opacity", 0.15);
+      const narrowArea = d312.area().x((d) => xScale(d.x)).y0((d) => yScale(d.low)).y1((d) => yScale(d.high)).curve(d312.curveMonotoneX);
+      svg.selectAll(".ci-narrow").data([narrowPoints]).join("path").attr("class", "ci-narrow").attr("d", narrowArea).attr("fill", theme.neutral).attr("opacity", 0.3);
+      const meanLine = d312.line().x((d) => xScale(d.x)).y((d) => yScale(d.y)).curve(d312.curveMonotoneX);
+      svg.selectAll(".mean-line").data([meanPoints]).join("path").attr("class", "mean-line").attr("d", meanLine).attr("fill", "none").attr("stroke", theme.neutral).attr("stroke-width", 2);
+      if (showTruth && data.truth) {
+        const truthPoints = x.map((xVal, i) => ({ x: xVal, y: data.truth[i] }));
+        const truthLine = d312.line().x((d) => xScale(d.x)).y((d) => yScale(d.y)).curve(d312.curveMonotoneX);
+        svg.selectAll(".truth-line").data([truthPoints]).join("path").attr("class", "truth-line").attr("d", truthLine).attr("fill", "none").attr("stroke", theme.positive).attr("stroke-width", 1.5).attr("stroke-dasharray", "6,3");
+      } else {
+        svg.selectAll(".truth-line").remove();
+      }
+      const yDomain = yScale.domain();
+      if (yDomain[0] <= 0 && yDomain[1] >= 0) {
+        svg.selectAll(".zero-line").data([0]).join("line").attr("class", "zero-line").attr("x1", margin.left).attr("x2", width - margin.right).attr("y1", yScale(0)).attr("y2", yScale(0)).attr("stroke", theme.reference).attr("opacity", 0.4).attr("stroke-dasharray", "4,3");
+      } else {
+        svg.selectAll(".zero-line").remove();
+      }
+      if (showObservations && data.observations) {
+        svg.selectAll(".obs-dot").data(data.observations).join("circle").attr("class", "obs-dot").attr("cx", (d) => xScale(d.x)).attr("cy", (d) => yScale(d.y)).attr("r", 2.5).attr("fill", theme.textMuted).attr("opacity", 0.5);
+      } else {
+        svg.selectAll(".obs-dot").remove();
+      }
+      svg.selectAll(".chart-title").remove();
+      if (title) {
+        svg.append("text").attr("class", "chart-title").attr("x", width / 2).attr("y", margin.top / 2).attr("text-anchor", "middle").attr("font-family", fonts.title).attr("font-size", "14px").attr("fill", theme.text).text(title);
+      }
+      svg.selectAll(".x-label").remove();
+      if (xlabel) {
+        svg.append("text").attr("class", "x-label").attr("x", (margin.left + width - margin.right) / 2).attr("y", height - 6).attr("text-anchor", "middle").attr("font-family", fonts.body).attr("font-size", "12px").attr("fill", theme.textSecondary).text(xlabel);
+      }
+      svg.selectAll(".y-label").remove();
+      if (ylabel) {
+        svg.append("text").attr("class", "y-label").attr("x", -(margin.top + height - margin.bottom) / 2).attr("y", 16).attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("font-family", fonts.body).attr("font-size", "12px").attr("fill", theme.textSecondary).text(ylabel);
+      }
+      svg.selectAll(".hover-overlay").remove();
+      svg.selectAll(".crosshair").remove();
+      svg.selectAll(".hover-dot").remove();
+      const overlay = svg.append("rect").attr("class", "hover-overlay").attr("x", margin.left).attr("y", margin.top).attr("width", width - margin.left - margin.right).attr("height", height - margin.top - margin.bottom).attr("fill", "transparent").style("cursor", "crosshair");
+      const bisector2 = d312.bisector((d) => d).left;
+      overlay.on("mousemove", function(event) {
+        const [mx] = d312.pointer(event);
+        const xVal = xScale.invert(mx);
+        const idx = Math.min(
+          x.length - 1,
+          Math.max(0, bisector2(x, xVal))
+        );
+        let nearestIdx = idx;
+        if (idx > 0) {
+          const d0 = Math.abs(x[idx - 1] - xVal);
+          const d1 = Math.abs(x[idx] - xVal);
+          if (d0 < d1) nearestIdx = idx - 1;
+        }
+        const nearestX = x[nearestIdx];
+        const nearestMean = mean4[nearestIdx];
+        svg.selectAll(".crosshair").remove();
+        svg.append("line").attr("class", "crosshair").attr("x1", xScale(nearestX)).attr("x2", xScale(nearestX)).attr("y1", margin.top).attr("y2", height - margin.bottom).attr("stroke", theme.textMuted).attr("opacity", 0.4).attr("stroke-dasharray", "3,2").attr("pointer-events", "none");
+        svg.selectAll(".hover-dot").remove();
+        svg.append("circle").attr("class", "hover-dot").attr("cx", xScale(nearestX)).attr("cy", yScale(nearestMean)).attr("r", 4).attr("fill", theme.neutral).attr("pointer-events", "none");
+        const isWholeNumbers = x.every((v) => Number.isInteger(v));
+        const xLabel = isWholeNumbers ? String(Math.round(nearestX)) : nearestX.toFixed(2);
+        const narrowLevel = Math.round(ciLevels[0] * 100);
+        const wideLevel = Math.round(ciLevels[1] * 100);
+        const lines = [
+          `Mean: ${nearestMean.toFixed(3)}`,
+          `${narrowLevel}% CI: [${ciNarrowLower[nearestIdx].toFixed(3)}, ${ciNarrowUpper[nearestIdx].toFixed(3)}]`,
+          `${wideLevel}% CI: [${ciWideLower[nearestIdx].toFixed(3)}, ${ciWideUpper[nearestIdx].toFixed(3)}]`
+        ];
+        if (showTruth && data.truth) {
+          lines.push(`Truth: ${data.truth[nearestIdx].toFixed(3)}`);
+        }
+        tooltip.show(
+          {
+            title: `x = ${xLabel}`,
+            lines
+          },
+          event
+        );
+        if (listeners["bandHover"]) {
+          const detail = {
+            x: nearestX,
+            mean: nearestMean,
+            ciNarrowLower: ciNarrowLower[nearestIdx],
+            ciNarrowUpper: ciNarrowUpper[nearestIdx],
+            ciWideLower: ciWideLower[nearestIdx],
+            ciWideUpper: ciWideUpper[nearestIdx],
+            truth: data.truth ? data.truth[nearestIdx] : void 0
+          };
+          const customEvent = new CustomEvent("bandHover", { detail });
+          listeners["bandHover"](customEvent);
+        }
+      }).on("mouseout", function() {
+        svg.selectAll(".crosshair").remove();
+        svg.selectAll(".hover-dot").remove();
+        tooltip.scheduleHide();
+      });
+    });
+  }
+  chart.width = function(value) {
+    if (arguments.length === 0) return width;
+    width = value;
+    return chart;
+  };
+  chart.height = function(value) {
+    if (arguments.length === 0) return height;
+    height = value;
+    return chart;
+  };
+  chart.margin = function(value) {
+    if (arguments.length === 0) return margin;
+    margin = value;
+    return chart;
+  };
+  chart.showTruth = function(value) {
+    if (arguments.length === 0) return showTruth;
+    showTruth = value;
+    return chart;
+  };
+  chart.showObservations = function(value) {
+    if (arguments.length === 0) return showObservations;
+    showObservations = value;
+    return chart;
+  };
+  chart.title = function(value) {
+    if (arguments.length === 0) return title;
+    title = value ?? null;
+    return chart;
+  };
+  chart.xlabel = function(value) {
+    if (arguments.length === 0) return xlabel;
+    xlabel = value ?? null;
+    return chart;
+  };
+  chart.ylabel = function(value) {
+    if (arguments.length === 0) return ylabel;
+    ylabel = value ?? null;
+    return chart;
+  };
+  chart.on = function(event, handler) {
+    if (handler === null) {
+      delete listeners[event];
+    } else {
+      listeners[event] = handler;
+    }
+    return chart;
+  };
+  return chart;
+}
+
+// src/core/DensityCompare.ts
+import * as d313 from "d3";
+function DensityCompare() {
+  let width = 600;
+  let height = 300;
+  let margin = { top: 30, right: 30, bottom: 40, left: 60 };
+  let showMedian = true;
+  let showFill = true;
+  let kdePoints = 100;
+  let title = null;
+  let xlabel = null;
+  const listeners = {};
+  const tooltip = Tooltip();
+  const visibleSeries = /* @__PURE__ */ new Set();
+  let initialized = false;
+  let cachedKDEs = /* @__PURE__ */ new Map();
+  let cachedMedians = /* @__PURE__ */ new Map();
+  let cachedColors = /* @__PURE__ */ new Map();
+  function chart(selection) {
+    selection.each(function(data) {
+      const container = d313.select(this);
+      const { series } = data;
+      for (const s of series) {
+        validateSamples(s.samples, "DensityCompare");
+      }
+      if (!initialized) {
+        visibleSeries.clear();
+        for (const s of series) {
+          visibleSeries.add(s.label);
+        }
+        initialized = true;
+      }
+      let globalMin = Infinity;
+      let globalMax = -Infinity;
+      for (const s of series) {
+        for (const v of s.samples) {
+          if (v < globalMin) globalMin = v;
+          if (v > globalMax) globalMax = v;
+        }
+      }
+      const padding = (globalMax - globalMin) * 0.05;
+      const domain = [globalMin - padding, globalMax + padding];
+      cachedKDEs.clear();
+      cachedMedians.clear();
+      cachedColors.clear();
+      for (let i = 0; i < series.length; i++) {
+        const s = series[i];
+        const kde = computeKDE(s.samples, domain, kdePoints);
+        cachedKDEs.set(s.label, kde);
+        const sorted = [...s.samples].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+        cachedMedians.set(s.label, median);
+        cachedColors.set(s.label, seriesColors[i % seriesColors.length]);
+      }
+      const xScale = d313.scaleLinear().domain(domain).range([margin.left, width - margin.right]);
+      let maxDensity = 0;
+      for (const s of series) {
+        if (!visibleSeries.has(s.label)) continue;
+        const kde = cachedKDEs.get(s.label);
+        for (const pt of kde) {
+          if (pt.density > maxDensity) maxDensity = pt.density;
+        }
+      }
+      if (maxDensity === 0) maxDensity = 1;
+      const yScale = d313.scaleLinear().domain([0, maxDensity]).range([height - margin.bottom, margin.top]);
+      let svg = container.select("svg.density-compare-svg");
+      if (svg.empty()) {
+        svg = container.append("svg").attr("class", "density-compare-svg").attr("width", width).attr("height", height);
+      } else {
+        svg.attr("width", width).attr("height", height);
+      }
+      svg.selectAll("*").remove();
+      const xAxisG = svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`).call(d313.axisBottom(xScale).ticks(8));
+      xAxisG.selectAll("text").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px");
+      xAxisG.selectAll("line").attr("stroke", theme.textSecondary);
+      xAxisG.select(".domain").attr("stroke", theme.textSecondary);
+      const yAxisG = svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d313.axisLeft(yScale).ticks(4));
+      yAxisG.selectAll("text").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px");
+      yAxisG.selectAll("line").attr("stroke", theme.textSecondary);
+      yAxisG.select(".domain").remove();
+      yAxisG.append("text").attr("transform", "rotate(-90)").attr("x", -(margin.top + (height - margin.top - margin.bottom) / 2)).attr("y", -margin.left + 15).attr("text-anchor", "middle").attr("fill", theme.textSecondary).attr("font-family", fonts.body).attr("font-size", "11px").text("Density");
+      const seriesGroup = svg.append("g").attr("class", "series-layer");
+      for (let i = 0; i < series.length; i++) {
+        const s = series[i];
+        if (!visibleSeries.has(s.label)) continue;
+        const kde = cachedKDEs.get(s.label);
+        const color = cachedColors.get(s.label);
+        const median = cachedMedians.get(s.label);
+        const g = seriesGroup.append("g").attr("class", `series-${i}`);
+        if (showFill) {
+          const area4 = d313.area().x((d) => xScale(d.value)).y0(yScale(0)).y1((d) => yScale(d.density)).curve(d313.curveBasis);
+          g.append("path").datum(kde).attr("d", area4).attr("fill", color).attr("opacity", 0.12);
+        }
+        const line3 = d313.line().x((d) => xScale(d.value)).y((d) => yScale(d.density)).curve(d313.curveBasis);
+        g.append("path").datum(kde).attr("d", line3).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2);
+        if (showMedian) {
+          const medianDensity = interpolateDensity(kde, median);
+          g.append("line").attr("x1", xScale(median)).attr("x2", xScale(median)).attr("y1", yScale(0)).attr("y2", yScale(medianDensity)).attr("stroke", color).attr("opacity", 0.6).attr("stroke-dasharray", "4,3").attr("stroke-width", 1);
+        }
+      }
+      const legendGroup = svg.append("g").attr("class", "legend");
+      const legendX = width - margin.right - 10;
+      let legendY = margin.top + 5;
+      for (let i = 0; i < series.length; i++) {
+        const s = series[i];
+        const color = cachedColors.get(s.label);
+        const isVisible = visibleSeries.has(s.label);
+        const itemG = legendGroup.append("g").attr("transform", `translate(${legendX},${legendY})`).style("cursor", "pointer").attr("opacity", isVisible ? 1 : 0.3);
+        itemG.append("rect").attr("width", 12).attr("height", 12).attr("fill", color).attr("rx", 2);
+        itemG.append("text").attr("x", -8).attr("y", 10).attr("text-anchor", "end").attr("font-family", fonts.body).attr("font-size", "11px").attr("fill", theme.text).text(s.label);
+        itemG.on("click", () => {
+          if (visibleSeries.has(s.label)) {
+            visibleSeries.delete(s.label);
+          } else {
+            visibleSeries.add(s.label);
+          }
+          chart(selection);
+          if (listeners["seriesToggle"]) {
+            const detail = {
+              label: s.label,
+              visible: visibleSeries.has(s.label)
+            };
+            const customEvent = new CustomEvent("seriesToggle", { detail });
+            listeners["seriesToggle"](customEvent);
+          }
+        });
+        legendY += 20;
+      }
+      if (title) {
+        svg.append("text").attr("x", width / 2).attr("y", margin.top / 2 + 4).attr("text-anchor", "middle").attr("font-family", fonts.title).attr("font-size", "14px").attr("fill", theme.text).text(title);
+      }
+      if (xlabel) {
+        svg.append("text").attr("x", margin.left + (width - margin.left - margin.right) / 2).attr("y", height - 4).attr("text-anchor", "middle").attr("font-family", fonts.body).attr("font-size", "12px").attr("fill", theme.textSecondary).text(xlabel);
+      }
+      const hoverGroup = svg.append("g").attr("class", "hover-layer");
+      svg.append("rect").attr("class", "hover-overlay").attr("x", margin.left).attr("y", margin.top).attr("width", width - margin.left - margin.right).attr("height", height - margin.top - margin.bottom).attr("fill", "transparent").style("cursor", "crosshair").on("mousemove", function(event) {
+        const [mx] = d313.pointer(event);
+        const xVal = xScale.invert(mx);
+        hoverGroup.selectAll("*").remove();
+        hoverGroup.append("line").attr("x1", xScale(xVal)).attr("x2", xScale(xVal)).attr("y1", margin.top).attr("y2", height - margin.bottom).attr("stroke", theme.textMuted).attr("opacity", 0.3).attr("stroke-dasharray", "3,2");
+        const densities = [];
+        for (const s of series) {
+          if (!visibleSeries.has(s.label)) continue;
+          const kde = cachedKDEs.get(s.label);
+          const color = cachedColors.get(s.label);
+          const density = interpolateDensity(kde, xVal);
+          hoverGroup.append("circle").attr("cx", xScale(xVal)).attr("cy", yScale(density)).attr("r", 3).attr("fill", color).attr("stroke", theme.text).attr("stroke-width", 0.5);
+          densities.push({ label: s.label, density, color });
+        }
+        const lines = densities.map(
+          (d) => `<span style="color:${d.color}">\u25CF</span> ${d.label}: ${d.density.toFixed(4)}`
+        );
+        tooltip.show(
+          {
+            title: `x = ${xVal.toFixed(3)}`,
+            lines
+          },
+          event
+        );
+        if (listeners["densityHover"]) {
+          const detail = { x: xVal, densities };
+          const customEvent = new CustomEvent("densityHover", { detail });
+          listeners["densityHover"](customEvent);
+        }
+      }).on("mouseout", function() {
+        hoverGroup.selectAll("*").remove();
+        tooltip.scheduleHide();
+      });
+    });
+  }
+  function interpolateDensity(kde, x) {
+    if (kde.length === 0) return 0;
+    if (x <= kde[0].value) return kde[0].density;
+    if (x >= kde[kde.length - 1].value) return kde[kde.length - 1].density;
+    for (let i = 0; i < kde.length - 1; i++) {
+      if (kde[i].value <= x && x <= kde[i + 1].value) {
+        const t = (x - kde[i].value) / (kde[i + 1].value - kde[i].value);
+        return kde[i].density + t * (kde[i + 1].density - kde[i].density);
+      }
+    }
+    return 0;
+  }
+  chart.width = function(value) {
+    if (arguments.length === 0) return width;
+    width = value;
+    return chart;
+  };
+  chart.height = function(value) {
+    if (arguments.length === 0) return height;
+    height = value;
+    return chart;
+  };
+  chart.margin = function(value) {
+    if (arguments.length === 0) return margin;
+    margin = value;
+    return chart;
+  };
+  chart.showMedian = function(value) {
+    if (arguments.length === 0) return showMedian;
+    showMedian = value;
+    return chart;
+  };
+  chart.showFill = function(value) {
+    if (arguments.length === 0) return showFill;
+    showFill = value;
+    return chart;
+  };
+  chart.kdePoints = function(value) {
+    if (arguments.length === 0) return kdePoints;
+    kdePoints = value;
+    return chart;
+  };
+  chart.title = function(value) {
+    if (arguments.length === 0) return title;
+    title = value ?? null;
+    return chart;
+  };
+  chart.xlabel = function(value) {
+    if (arguments.length === 0) return xlabel;
+    xlabel = value ?? null;
+    return chart;
+  };
+  chart.on = function(event, handler) {
+    if (handler === null) {
+      delete listeners[event];
+    } else {
+      listeners[event] = handler;
+    }
+    return chart;
+  };
+  return chart;
+}
 export {
+  CIBand,
   ContextMenu,
+  DensityCompare,
   DraggableCIBounds,
+  ForestPlot,
   HintArea,
   QuantileDots,
   RidgeDotplot,
@@ -2147,6 +2790,7 @@ export {
   getCIBounds,
   getPercentile,
   getSortedPairs,
+  seriesColors,
   sortSamples,
   theme,
   validateCIBounds,

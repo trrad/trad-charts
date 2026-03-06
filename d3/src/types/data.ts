@@ -73,3 +73,42 @@ export interface KDEPoint {
   value: number; // X-axis value
   density: number; // Estimated probability density
 }
+
+/**
+ * Data interface for ForestPlot component
+ */
+export interface ForestPlotItem {
+  label: string;     // Row label (e.g., segment name)
+  estimate: number;  // Point estimate (e.g., CATE)
+  ciLower: number;   // Lower CI bound
+  ciUpper: number;   // Upper CI bound
+}
+
+export interface ForestPlotData {
+  items: ForestPlotItem[];
+  nullValue?: number; // Reference line value (default: 0)
+}
+
+/**
+ * Data interface for CIBand component
+ */
+export interface CIBandData {
+  x: number[];              // X-axis values
+  mean: number[];           // Posterior mean at each x
+  std: number[];            // Posterior std at each x
+  truth?: number[];         // Optional true values for comparison
+  observations?: { x: number; y: number }[]; // Optional observed data
+  ciLevels?: [number, number]; // CI levels (default: [0.50, 0.95])
+}
+
+/**
+ * Data interface for DensityCompare component
+ */
+export interface DensityCompareSeries {
+  label: string;     // Series label
+  samples: number[]; // Raw posterior samples
+}
+
+export interface DensityCompareData {
+  series: DensityCompareSeries[];
+}

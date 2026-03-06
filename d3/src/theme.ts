@@ -45,6 +45,7 @@ export const theme = {
   negative: palette.accents.red,
   neutral: palette.accents.blue,
   reference: palette.overlays.overlay0,
+  warning: palette.accents.yellow,
 
   // Interactive / muted
   muted: palette.overlays.overlay1,
@@ -87,6 +88,16 @@ export const theme = {
 } as const;
 
 export type TradTheme = typeof theme;
+
+// ---------------------------------------------------------------------------
+// Series color cycle — 8 accents for multi-series charts
+// ---------------------------------------------------------------------------
+
+export const seriesColors: readonly string[] = [
+  palette.accents.blue, palette.accents.peach, palette.accents.green,
+  palette.accents.red, palette.accents.yellow, palette.accents.teal,
+  palette.accents.flamingo, palette.accents.sky,
+] as const;
 
 // ---------------------------------------------------------------------------
 // Default color scheme for QuantileDots threshold coloring

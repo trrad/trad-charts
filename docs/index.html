@@ -189,6 +189,24 @@
         <div id="ridge-dotplot"></div>
       </div>
 
+      <div class="chart-card">
+        <h3>ForestPlot</h3>
+        <p class="desc">HTE segment estimates with capped CIs. Hover for details, click to highlight a row. Green = positive, red = negative.</p>
+        <div id="forest-plot"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>CIBand</h3>
+        <p class="desc">Posterior mean with layered 50%/95% credible bands. Hover crosshair shows interpolated values. Green dashed = truth.</p>
+        <div id="ci-band"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>DensityCompare</h3>
+        <p class="desc">Overlaid KDE densities with median lines. Click legend swatches to toggle series. Hover for multi-series comparison.</p>
+        <div id="density-compare"></div>
+      </div>
+
       <div class="chart-card" style="opacity: 0.7;">
         <h3>QuantileDots <span style="font-size:11px; color:#7a6488; font-weight:400;">(standalone component)</span></h3>
         <p class="desc">20-dot quantile dotplot with KDE violin overlay, threshold-split coloring</p>
@@ -327,7 +345,7 @@ d3.select('#container')
 
   <script type="module">
     import * as d3 from 'd3';
-    import { QuantileDots, RidgeDotplot } from 'trad-charts-d3';
+    import { QuantileDots, RidgeDotplot, ForestPlot, CIBand, DensityCompare } from 'trad-charts-d3';
 
     function normalSamples(n, mean, std) {
       const samples = [];
@@ -406,6 +424,78 @@ d3.select('#container')
     ridge.on('ciDrag', (event) => {
       ridge.ciLower(event.detail.lower).ciUpper(event.detail.upper);
       rerender();
+    });
+
+    // --- ForestPlot ---
+    const forestItems = [
+      { label: 'High-value users',   estimate:  0.142, ciLower:  0.068, ciUpper: 0.216 },
+      { label: 'Mobile users',       estimate:  0.089, ciLower:  0.012, ciUpper: 0.166 },
+      { label: 'New visitors',       estimate:  0.053, ciLower: -0.031, ciUpper: 0.137 },
+      { label: 'Returning visitors', estimate: -0.018, ciLower: -0.098, ciUpper: 0.062 },
+      { label: 'Desktop users',      estimate: -0.067, ciLower: -0.155, ciUpper: 0.021 },
+      { label: 'Low-value users',    estimate: -0.104, ciLower: -0.192, ciUpper: -0.016 },
+    ];
+
+    const forest = ForestPlot()
+      .width(900)
+      .sortByEstimate(true)
+      .title('CATE by Segment')
+      .xlabel('Treatment Effect');
+
+    d3.select('#forest-plot')
+      .datum({ items: forestItems, nullValue: 0 })
+      .call(forest);
+
+    forest.on('itemClick', (event) => {
+      console.log('ForestPlot click:', event.detail.label, event.detail.estimate);
+    });
+
+    // --- CIBand ---
+    const nPoints = 50;
+    const ciBandX = Array.from({ length: nPoints }, (_, i) => i);
+    const trueEffect = ciBandX.map(x => 0.1 * Math.sin(x * 0.15) + 0.05);
+    const ciBandMean = trueEffect.map(t => t + (Math.random() - 0.5) * 0.02);
+    const ciBandStd = ciBandX.map(() => 0.03 + Math.random() * 0.02);
+    const observations = Array.from({ length: 80 }, () => {
+      const xi = Math.random() * (nPoints - 1);
+      const idx = Math.floor(xi);
+      const t = xi - idx;
+      const trueY = (1 - t) * trueEffect[idx] + t * trueEffect[Math.min(idx + 1, nPoints - 1)];
+      return { x: xi, y: trueY + (Math.random() - 0.5) * 0.12 };
+    });
+
+    const ciBand = CIBand()
+      .width(900)
+      .height(320)
+      .title('CATE Over Covariate')
+      .xlabel('Covariate Index')
+      .ylabel('Treatment Effect');
+
+    d3.select('#ci-band')
+      .datum({ x: ciBandX, mean: ciBandMean, std: ciBandStd, truth: trueEffect, observations })
+      .call(ciBand);
+
+    // --- DensityCompare ---
+    const densitySeries = [
+      { label: 'Variant A', samples: normalSamples(5000, 0.12, 0.04) },
+      { label: 'Variant B', samples: normalSamples(5000, 0.05, 0.06) },
+      { label: 'Variant C', samples: normalSamples(5000, -0.02, 0.03) },
+    ];
+
+    const density = DensityCompare()
+      .width(900)
+      .height(320)
+      .showMedian(true)
+      .showFill(true)
+      .title('Posterior Density Comparison')
+      .xlabel('Lift (%)');
+
+    d3.select('#density-compare')
+      .datum({ series: densitySeries })
+      .call(density);
+
+    density.on('seriesToggle', (event) => {
+      console.log('Series toggled:', event.detail.label, event.detail.visible ? 'visible' : 'hidden');
     });
   </script>
 </body>

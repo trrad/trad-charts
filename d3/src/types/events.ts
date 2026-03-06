@@ -59,6 +59,62 @@ export interface VariantClickEventDetail {
 }
 
 /**
+ * Emitted when user hovers over a ForestPlot row
+ * Source: ForestPlot
+ */
+export interface ForestItemHoverEventDetail {
+  label: string;
+  estimate: number;
+  ciLower: number;
+  ciUpper: number;
+  index: number;
+}
+
+/**
+ * Emitted when user clicks a ForestPlot row
+ * Source: ForestPlot
+ */
+export interface ForestItemClickEventDetail {
+  label: string;
+  estimate: number;
+  ciLower: number;
+  ciUpper: number;
+  index: number;
+}
+
+/**
+ * Emitted when user hovers on CIBand chart
+ * Source: CIBand
+ */
+export interface BandHoverEventDetail {
+  x: number;
+  mean: number;
+  ciNarrowLower: number;
+  ciNarrowUpper: number;
+  ciWideLower: number;
+  ciWideUpper: number;
+  truth?: number;
+}
+
+/**
+ * Emitted when user hovers on DensityCompare chart
+ * Source: DensityCompare
+ */
+export interface DensityHoverEventDetail {
+  x: number;
+  densities: { label: string; density: number; color: string }[];
+}
+
+/**
+ * Emitted when user toggles a series in DensityCompare legend
+ * Source: DensityCompare
+ */
+export interface SeriesToggleEventDetail {
+  label: string;
+  visible: boolean;
+}
+
+/**
  * Type-safe event handler signatures
  */
 export type DotHoverHandler = (event: CustomEvent<DotHoverEventDetail>) => void;
@@ -66,3 +122,8 @@ export type DotClickHandler = (event: CustomEvent<DotClickEventDetail>) => void;
 export type CIDragHandler = (event: CustomEvent<CIDragEventDetail>) => void;
 export type ThresholdDragHandler = (event: CustomEvent<ThresholdDragEventDetail>) => void;
 export type VariantClickHandler = (event: CustomEvent<VariantClickEventDetail>) => void;
+export type ForestItemHoverHandler = (event: CustomEvent<ForestItemHoverEventDetail>) => void;
+export type ForestItemClickHandler = (event: CustomEvent<ForestItemClickEventDetail>) => void;
+export type BandHoverHandler = (event: CustomEvent<BandHoverEventDetail>) => void;
+export type DensityHoverHandler = (event: CustomEvent<DensityHoverEventDetail>) => void;
+export type SeriesToggleHandler = (event: CustomEvent<SeriesToggleEventDetail>) => void;
