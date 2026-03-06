@@ -599,6 +599,8 @@ export function RidgeDotplot() {
         thresholdGroup.call(thresholdLine as unknown as (sel: d3.Selection<Element, unknown, Element | null, unknown>) => void);
 
         thresholdLine.on('thresholdDrag', (event: CustomEvent) => {
+          data.threshold = event.detail.value;
+          chart(selection as unknown as d3.Selection<Element, RidgeDotplotData, Element | null, unknown>);
           if (listeners['thresholdDrag']) {
             listeners['thresholdDrag'](event);
           }

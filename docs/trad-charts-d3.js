@@ -1595,6 +1595,8 @@ function RidgeDotplot() {
         const thresholdLine = ThresholdLine().scale(xScale).yRange([margin.top, effectiveHeight - margin.bottom]).value(threshold).samples(firstVariant.samples).controlSamples(firstVariant.controlSamples);
         thresholdGroup.call(thresholdLine);
         thresholdLine.on("thresholdDrag", (event) => {
+          data.threshold = event.detail.value;
+          chart(selection);
           if (listeners["thresholdDrag"]) {
             listeners["thresholdDrag"](event);
           }
