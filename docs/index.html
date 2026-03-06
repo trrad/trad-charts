@@ -168,15 +168,15 @@
       <p>Bayesian posterior visualizations with drag-to-adjust CI bounds, threshold lines, and plain-English tooltips.</p>
 
       <div class="chart-card">
-        <h3>QuantileDots</h3>
-        <p class="desc">20-dot quantile dotplot with KDE violin overlay, threshold-split coloring</p>
-        <div id="quantile-dots"></div>
+        <h3>RidgeDotplot</h3>
+        <p class="desc">Multi-variant ridge comparison with draggable threshold line, CI bounds, dual $/% axes, inline statistics. Drag the dashed threshold line to re-split.</p>
+        <div id="ridge-dotplot"></div>
       </div>
 
-      <div class="chart-card">
-        <h3>RidgeDotplot</h3>
-        <p class="desc">Multi-variant ridge comparison with draggable CI bounds, dual $/% axes, inline statistics</p>
-        <div id="ridge-dotplot"></div>
+      <div class="chart-card" style="opacity: 0.7;">
+        <h3>QuantileDots <span style="font-size:11px; color:#7a6488; font-weight:400;">(standalone component)</span></h3>
+        <p class="desc">20-dot quantile dotplot with KDE violin overlay, threshold-split coloring</p>
+        <div id="quantile-dots"></div>
       </div>
     </div>
 
@@ -322,11 +322,20 @@ d3.select('#container')
       .datum({ variants, threshold: currentThreshold })
       .call(ridge);
 
-    ridge.on('thresholdDrag', (event) => {
-      currentThreshold = event.detail.value;
+    function rerender() {
       ridgeContainer
         .datum({ variants, threshold: currentThreshold })
         .call(ridge);
+    }
+
+    ridge.on('thresholdDrag', (event) => {
+      currentThreshold = event.detail.value;
+      rerender();
+    });
+
+    ridge.on('ciDrag', (event) => {
+      ridge.ciLower(event.detail.lower).ciUpper(event.detail.upper);
+      rerender();
     });
   </script>
 </body>
