@@ -16,7 +16,10 @@ Usage:
 """
 
 from trad_charts.theme import TITLE_FONT, Palette, apply_theme, get_palette, watermark
-from trad_charts.charts import forest_plot, ci_band, distribution, power_curve, grouped_bar
+from trad_charts.charts import (
+    forest_plot, ci_band, distribution, power_curve, grouped_bar,
+    posterior_density, density_compare, mcmc_trace, calibration_plot,
+)
 
 __all__ = [
     # Theme
@@ -31,4 +34,8 @@ __all__ = [
     "distribution",
     "power_curve",
     "grouped_bar",
+    "posterior_density",
+    "density_compare",
+    "mcmc_trace",
+    "calibration_plot",
 ]

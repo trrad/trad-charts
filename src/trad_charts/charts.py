@@ -251,3 +251,301 @@ def grouped_bar(
         ax.set_title(title, **TITLE_FONT)
     ax.legend()
     return ax
+
+
+# ---------------------------------------------------------------------------
+# KDE utilities (manual — avoids scipy hard dep)
+# ---------------------------------------------------------------------------
+
+def _silverman_bandwidth(data: np.ndarray) -> float:
+    """Silverman's rule with robust sigma (matches D3 density default)."""
+    std = np.std(data, ddof=1)
+    iqr = np.subtract(*np.percentile(data, [75, 25]))
+    sigma = min(std, iqr / 1.34) if iqr > 0 else std
+    return 1.06 * sigma * len(data) ** -0.2
+
+
+def _epanechnikov_kde(data: np.ndarray, grid: np.ndarray, bandwidth: float) -> np.ndarray:
+    """Epanechnikov kernel density estimate (matches D3 density kernel)."""
+    n = len(data)
+    density = np.zeros_like(grid)
+    for xi in data:
+        u = (grid - xi) / bandwidth
+        mask = np.abs(u) <= 1
+        density[mask] += 0.75 * (1 - u[mask] ** 2)
+    density /= n * bandwidth
+    return density
+
+
+# ---------------------------------------------------------------------------
+# posterior_density
+# ---------------------------------------------------------------------------
+
+def posterior_density(
+    ax: Axes,
+    *,
+    samples: ArrayLike,
+    threshold: float | None = None,
+    ci: tuple[float, float] = (0.05, 0.95),
+    point_estimate: str = "median",
+    title: str = "",
+    xlabel: str = "",
+) -> Axes:
+    """Posterior density plot with CI shading, threshold split, and probability labels.
+
+    KDE density curve with the credible interval region filled darker.
+    If a threshold is set, the density is split into two colored halves
+    with probability annotations.
+    """
+    samples = np.asarray(samples, dtype=float)
+
+    # KDE
+    grid = np.linspace(samples.min(), samples.max(), 300)
+    bw = _silverman_bandwidth(samples)
+    density = _epanechnikov_kde(samples, grid, bw)
+
+    # CI bounds
+    ci_lo = np.quantile(samples, ci[0])
+    ci_hi = np.quantile(samples, ci[1])
+
+    if threshold is not None:
+        # Split fill at threshold
+        below = grid <= threshold
+        above = grid >= threshold
+        ax.fill_between(grid[below], 0, density[below],
+                        color=_pal.red, alpha=0.15, linewidth=0)
+        ax.fill_between(grid[above], 0, density[above],
+                        color=_pal.blue, alpha=0.15, linewidth=0)
+
+        # Darker fill within CI
+        ci_mask_below = below & (grid >= ci_lo) & (grid <= ci_hi)
+        ci_mask_above = above & (grid >= ci_lo) & (grid <= ci_hi)
+        if ci_mask_below.any():
+            ax.fill_between(grid[ci_mask_below], 0, density[ci_mask_below],
+                            color=_pal.red, alpha=0.25, linewidth=0)
+        if ci_mask_above.any():
+            ax.fill_between(grid[ci_mask_above], 0, density[ci_mask_above],
+                            color=_pal.blue, alpha=0.25, linewidth=0)
+
+        # Outline
+        ax.plot(grid[below], density[below], color=_pal.red, linewidth=1.5)
+        ax.plot(grid[above], density[above], color=_pal.blue, linewidth=1.5)
+
+        # Threshold line
+        ax.axvline(threshold, color=_pal.overlay1, linewidth=1,
+                   linestyle="--", alpha=0.6)
+
+        # Probability labels
+        p_above = np.mean(samples >= threshold)
+        p_below = 1 - p_above
+        peak = density.max()
+        if below.any():
+            ax.text(grid[below].mean(), peak * 0.7,
+                    f"{p_below:.0%}", ha="center", va="center",
+                    fontsize=12, color=_pal.red, alpha=0.9, fontweight="bold")
+        if above.any():
+            ax.text(grid[above].mean(), peak * 0.7,
+                    f"{p_above:.0%}", ha="center", va="center",
+                    fontsize=12, color=_pal.blue, alpha=0.9, fontweight="bold")
+    else:
+        # Single-color density
+        ax.fill_between(grid, 0, density, color=_pal.blue, alpha=0.15, linewidth=0)
+        # Darker CI region
+        ci_mask = (grid >= ci_lo) & (grid <= ci_hi)
+        ax.fill_between(grid[ci_mask], 0, density[ci_mask],
+                        color=_pal.blue, alpha=0.25, linewidth=0)
+        ax.plot(grid, density, color=_pal.blue, linewidth=1.5)
+
+    # Point estimate
+    if point_estimate == "median":
+        est = np.median(samples)
+    elif point_estimate == "mean":
+        est = np.mean(samples)
+    else:
+        est = None
+
+    if est is not None:
+        ax.axvline(est, color=_pal.text, linewidth=1.5, alpha=0.7, zorder=4)
+
+    # CI bracket tick marks
+    for bound in (ci_lo, ci_hi):
+        ax.axvline(bound, color=_pal.overlay0, linewidth=1, linestyle=":",
+                   alpha=0.5)
+
+    ax.set_ylim(0, None)
+    ax.set_yticks([])
+    ax.grid(axis="y", visible=False)
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if title:
+        ax.set_title(title, **TITLE_FONT)
+    return ax
+
+
+# ---------------------------------------------------------------------------
+# density_compare
+# ---------------------------------------------------------------------------
+
+def density_compare(
+    ax: Axes,
+    *,
+    data: list[ArrayLike],
+    labels: list[str],
+    title: str = "",
+    xlabel: str = "",
+    ylabel: str = "Density",
+    fill: bool = True,
+    show_median: bool = False,
+) -> Axes:
+    """Overlaid KDE density curves for comparing distributions.
+
+    Each distribution gets its own KDE line in a distinct color from the
+    palette cycle. Optional light fill and median markers.
+    """
+    colors = _pal.cycle
+
+    # Compute shared grid across all distributions
+    all_vals = np.concatenate([np.asarray(d, dtype=float) for d in data])
+    grid = np.linspace(all_vals.min(), all_vals.max(), 300)
+
+    for i, (samples, label) in enumerate(zip(data, labels)):
+        samples = np.asarray(samples, dtype=float)
+        color = colors[i % len(colors)]
+        bw = _silverman_bandwidth(samples)
+        density = _epanechnikov_kde(samples, grid, bw)
+
+        ax.plot(grid, density, color=color, linewidth=2, label=label)
+        if fill:
+            ax.fill_between(grid, 0, density, color=color,
+                            alpha=0.1, linewidth=0)
+        if show_median:
+            med = float(np.median(samples))
+            ax.axvline(med, color=color, linewidth=1, linestyle="--",
+                       alpha=0.6)
+
+    ax.set_ylim(0, None)
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title, **TITLE_FONT)
+    ax.legend()
+    return ax
+
+
+# ---------------------------------------------------------------------------
+# mcmc_trace
+# ---------------------------------------------------------------------------
+
+def mcmc_trace(
+    ax: Axes,
+    *,
+    trace: ArrayLike,
+    target: float | None = None,
+    burn_in: int = 0,
+    running_mean_window: float = 0.1,
+    title: str = "",
+    ylabel: str = "",
+) -> Axes:
+    """MCMC trace plot with running mean, burn-in shading, and target line.
+
+    Designed for convergence diagnostics — the running mean should converge
+    toward the target value as the chain mixes.
+    """
+    trace = np.asarray(trace, dtype=float)
+    n = len(trace)
+    iterations = np.arange(n)
+
+    # 1. Raw trace
+    ax.plot(iterations, trace, color=_pal.blue, alpha=0.4, linewidth=0.5)
+
+    # 2. Running mean
+    window = max(2, int(n * running_mean_window))
+    kernel = np.ones(window) / window
+    running_avg = np.convolve(trace, kernel, mode="valid")
+    offset = window - 1
+    ax.plot(iterations[offset:], running_avg, color=_pal.peach,
+            linewidth=1.8, label=f"Running mean (w={window})")
+
+    # 3. Burn-in shading
+    if burn_in > 0:
+        ax.axvspan(0, burn_in, color=_pal.surface1, alpha=0.4, zorder=0)
+        ax.axvline(burn_in, color=_pal.overlay0, linewidth=1,
+                   linestyle=":", alpha=0.7)
+
+    # 4. Target reference
+    if target is not None:
+        ax.axhline(target, color=_pal.green, linewidth=1.5, linestyle="--",
+                   alpha=0.8, label=f"Target = {target}")
+
+    ax.set_xlabel("Iteration")
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title, **TITLE_FONT)
+    ax.legend(loc="upper right")
+    return ax
+
+
+# ---------------------------------------------------------------------------
+# calibration_plot
+# ---------------------------------------------------------------------------
+
+def calibration_plot(
+    ax: Axes,
+    *,
+    nominal: ArrayLike,
+    actual: ArrayLike,
+    title: str = "",
+    xlabel: str = "Nominal Coverage",
+    ylabel: str = "Actual Coverage",
+    show_deviation: bool = True,
+) -> Axes:
+    """Calibration plot — nominal vs actual coverage on the identity line.
+
+    Points on the diagonal indicate perfect calibration. Deviation lines
+    (lollipops to the identity line) highlight miscalibration magnitude.
+    Points are colored blue (well-calibrated) / yellow / red (miscalibrated).
+    """
+    nominal = np.asarray(nominal, dtype=float)
+    actual = np.asarray(actual, dtype=float)
+
+    # Identity line + tolerance band
+    line_range = np.array([0, 1])
+    ax.plot(line_range, line_range, color=_pal.overlay1, linewidth=1,
+            linestyle="--", alpha=0.6, label="Perfect calibration")
+    ax.fill_between(line_range, line_range - 0.05, line_range + 0.05,
+                    color=_pal.overlay0, alpha=0.1, linewidth=0,
+                    label="\u00b15% tolerance")
+
+    # Color by deviation severity
+    deviations = np.abs(actual - nominal)
+    colors = []
+    for d in deviations:
+        if d <= 0.03:
+            colors.append(_pal.blue)
+        elif d <= 0.07:
+            colors.append(_pal.yellow)
+        else:
+            colors.append(_pal.red)
+
+    # Deviation lines (lollipop to diagonal)
+    if show_deviation:
+        for n_val, a_val, c in zip(nominal, actual, colors):
+            ax.plot([n_val, n_val], [n_val, a_val], color=c,
+                    linewidth=1.5, alpha=0.6, zorder=4)
+
+    # Scatter points
+    ax.scatter(nominal, actual, c=colors, s=80, edgecolors="none",
+               zorder=5, alpha=0.9)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title, **TITLE_FONT)
+    ax.legend(loc="upper left")
+    return ax

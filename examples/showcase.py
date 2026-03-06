@@ -1,23 +1,22 @@
-"""6-panel showcase of the trad-charts theme and helpers.
+"""9-panel showcase of the trad-charts theme and helpers.
 
 Run: uv run python examples/showcase.py
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 
 from trad_charts import (
-    apply_theme, get_palette, watermark, TITLE_FONT,
+    apply_theme, watermark,
     forest_plot, ci_band, distribution, power_curve, grouped_bar,
+    posterior_density, density_compare, mcmc_trace, calibration_plot,
 )
 
 apply_theme()
-pal = get_palette()
 rng = np.random.default_rng(42)
 
-fig = plt.figure(figsize=(16, 14))
-gs = fig.add_gridspec(3, 2)
+fig = plt.figure(figsize=(18, 16))
+gs = fig.add_gridspec(3, 3)
 
 # 1. Forest plot
 ax1 = fig.add_subplot(gs[0, 0])
@@ -51,38 +50,64 @@ ci_band(
     ylabel="CATE ($)",
 )
 
-# 3. Distribution comparison
-ax3 = fig.add_subplot(gs[1, 0])
+# 3. Posterior density — treatment effect with threshold
+ax3 = fig.add_subplot(gs[0, 2])
+posterior = rng.normal(0.032, 0.018, 4000)
+posterior_density(
+    ax3,
+    samples=posterior,
+    threshold=0.0,
+    ci=(0.05, 0.95),
+    title="Posterior: P(effect > 0)",
+    xlabel="Treatment Effect (RPV)",
+)
+
+# 4. Distribution comparison
+ax4 = fig.add_subplot(gs[1, 0])
 dist_data = [rng.normal(mu, sig, 200) for mu, sig in
              [(0.03, 0.008), (0.06, 0.015), (0.04, 0.010),
               (0.05, 0.020), (0.025, 0.005)]]
 
 distribution(
-    ax3,
+    ax4,
     data=dist_data,
     labels=["constant", "reversal", "sparse", "nonlinear", "heavy_tail"],
     title="RMSE Distribution by Scenario",
     ylabel="RMSE",
 )
 
-# 4. Density / histogram overlay (manual — no helper yet)
-ax4 = fig.add_subplot(gs[1, 1])
-for i, (name, mu, sig) in enumerate([
-    ("Control", 45, 12), ("Treatment A", 52, 10), ("Treatment B", 48, 15),
-]):
-    samples = rng.normal(mu, sig, 500)
-    ax4.hist(samples, bins=35, alpha=0.25, color=pal.cycle[i],
-             density=True, label=name)
-    xd = np.linspace(samples.min(), samples.max(), 100)
-    ax4.plot(xd, stats.norm.pdf(xd, mu, sig), color=pal.cycle[i], linewidth=1.5)
+# 5. Density comparison
+ax5 = fig.add_subplot(gs[1, 1])
+density_compare(
+    ax5,
+    data=[rng.normal(45, 12, 500), rng.normal(52, 10, 500), rng.normal(48, 15, 500)],
+    labels=["Control", "Treatment A", "Treatment B"],
+    title="Revenue Distribution by Variant",
+    xlabel="Revenue per Visitor ($)",
+    show_median=True,
+)
 
-ax4.set_xlabel("Revenue per Visitor ($)")
-ax4.set_ylabel("Density")
-ax4.set_title("Revenue Distribution by Variant", **TITLE_FONT)
-ax4.legend()
+# 6. MCMC trace — sigma^2 convergence
+ax6 = fig.add_subplot(gs[1, 2])
+n_iter = 2000
+trace = np.empty(n_iter)
+trace[0] = 3.0
+for i in range(1, n_iter):
+    trace[i] = trace[i - 1] + rng.normal(0, 0.05)
+    trace[i] = 0.98 * trace[i] + 0.02 * 1.0
 
-# 5. Power curve
-ax5 = fig.add_subplot(gs[2, 0])
+mcmc_trace(
+    ax6,
+    trace=trace,
+    target=1.0,
+    burn_in=200,
+    running_mean_window=0.1,
+    title="MCMC Trace: sigma^2",
+    ylabel="sigma^2",
+)
+
+# 7. Power curve
+ax7 = fig.add_subplot(gs[2, 0])
 sample_sizes = np.array([500, 1000, 2000, 5000, 10000, 20000, 50000])
 n_sims = 50
 power_means = []
@@ -96,17 +121,17 @@ for n in sample_sizes:
     power_cis.append(1.96 * se)
 
 power_curve(
-    ax5,
+    ax7,
     sample_sizes=sample_sizes,
     power=power_means,
     power_ci=power_cis,
     title="Power vs Sample Size",
 )
 
-# 6. Grouped bar
-ax6 = fig.add_subplot(gs[2, 1])
+# 8. Grouped bar
+ax8 = fig.add_subplot(gs[2, 1])
 grouped_bar(
-    ax6,
+    ax8,
     categories=["constant", "reversal", "sparse", "nonlinear", "heavy_tail"],
     groups={
         "Power": [0.82, 0.45, 0.78, 0.65, 0.91],
@@ -116,6 +141,17 @@ grouped_bar(
     ylabel="Rate",
     target_line=0.80,
     target_label="80% target",
+)
+
+# 9. Calibration plot
+ax9 = fig.add_subplot(gs[2, 2])
+nominal = np.array([0.50, 0.60, 0.70, 0.80, 0.90, 0.95])
+actual = np.array([0.52, 0.63, 0.58, 0.77, 0.92, 0.89])
+calibration_plot(
+    ax9,
+    nominal=nominal,
+    actual=actual,
+    title="CI Calibration",
 )
 
 watermark(fig)
