@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# D3 build artifacts
+d3/node_modules/
+d3/dist/

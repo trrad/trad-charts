@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>trad-charts D3 Showcase</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    @font-face {
+      font-family: '3270 Nerd Font Propo';
+      src: url('https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/3270/Regular/3270NerdFontPropo-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a0f1f;
+      color: #e8e3ed;
+      font-family: 'IBM Plex Sans', sans-serif;
+      padding: 40px;
+    }
+
+    h1 {
+      font-family: '3270 Nerd Font Propo', monospace;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #e8e3ed;
+    }
+
+    .subtitle {
+      color: #a297a8;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+
+    .chart-section {
+      margin-bottom: 60px;
+    }
+
+    .chart-section h2 {
+      font-family: '3270 Nerd Font Propo', monospace;
+      font-size: 20px;
+      color: #d4ccd8;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #33213f;
+    }
+
+    .chart-container {
+      background: #1a0f1f;
+      border: 1px solid #33213f;
+      border-radius: 8px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>trad-charts D3</h1>
+  <p class="subtitle">Interactive Bayesian posterior visualizations — dark purple chrome with Catppuccin Mocha accents</p>
+
+  <div class="chart-section">
+    <h2>QuantileDots — standalone</h2>
+    <div class="chart-container" id="quantile-dots"></div>
+  </div>
+
+  <div class="chart-section">
+    <h2>RidgeDotplot — multi-variant comparison</h2>
+    <div class="chart-container" id="ridge-dotplot"></div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm",
+      "trad-charts-d3": "../dist/trad-charts-d3.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as d3 from 'd3';
+    import { QuantileDots, RidgeDotplot } from 'trad-charts-d3';
+
+    // --- Synthetic posterior data ---
+    function normalSamples(n, mean, std) {
+      const samples = [];
+      for (let i = 0; i < n; i++) {
+        // Box-Muller transform
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        samples.push(mean + std * z);
+      }
+      return samples;
+    }
+
+    // --- QuantileDots ---
+    const qdSamples = normalSamples(5000, 0.08, 0.05);
+
+    const qd = QuantileDots()
+      .width(800)
+      .height(80)
+      .numDots(20)
+      .showViolin(true);
+
+    d3.select('#quantile-dots')
+      .datum({ samples: qdSamples, threshold: 0 })
+      .call(qd);
+
+    // --- RidgeDotplot ---
+    const controlRPU = normalSamples(5000, 12.0, 1.5);
+    const meanControl = d3.mean(controlRPU);
+
+    function makeVariant(name, displayName, liftMean, liftStd, opts = {}) {
+      const liftSamples = normalSamples(5000, liftMean, liftStd);
+      const effectSamples = liftSamples.map(l => l * meanControl);
+      return {
+        name,
+        displayName,
+        samples: liftSamples,
+        effectSamples,
+        controlSamples: controlRPU,
+        userCount: 15000 + Math.floor(Math.random() * 5000),
+        converterCount: 2000 + Math.floor(Math.random() * 1000),
+        ...opts,
+      };
+    }
+
+    const variants = [
+      makeVariant('control', 'Control (baseline)', 0.0, 0.02, { isBaseline: true }),
+      makeVariant('variant_a', 'Variant A — new checkout', 0.12, 0.04),
+      makeVariant('variant_b', 'Variant B — upsell modal', 0.05, 0.06),
+    ];
+
+    const ridge = RidgeDotplot()
+      .width(900)
+      .ridgeHeight(120)
+      .numDots(20)
+      .showViolin(true)
+      .showStatistics(true)
+      .showCIBounds(true);
+
+    d3.select('#ridge-dotplot')
+      .datum({ variants, threshold: 0.10 })
+      .call(ridge);
+  </script>
+</body>
+</html>

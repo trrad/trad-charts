@@ -1,0 +1,25 @@
+{
+  "name": "trad-charts-d3",
+  "version": "0.1.0",
+  "description": "D3 interactive chart components — dark purple chrome with Catppuccin Mocha accents",
+  "type": "module",
+  "main": "dist/trad-charts-d3.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/trad-charts-d3.js --external:d3 --sourcemap",
+    "typecheck": "tsc --noEmit",
+    "declarations": "tsc --emitDeclarationOnly"
+  },
+  "peerDependencies": {
+    "d3": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}

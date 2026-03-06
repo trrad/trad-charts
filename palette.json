@@ -1,0 +1,44 @@
+{
+  "surfaces": {
+    "crust": "#0f0812",
+    "mantle": "#150c1a",
+    "base": "#1a0f1f",
+    "surface0": "#251730",
+    "surface1": "#33213f",
+    "surface2": "#432d52"
+  },
+  "overlays": {
+    "overlay0": "#5a4168",
+    "overlay1": "#7a6488",
+    "overlay2": "#9688a0"
+  },
+  "text": {
+    "subtext0": "#a297a8",
+    "subtext1": "#d4ccd8",
+    "text": "#e8e3ed"
+  },
+  "accents": {
+    "rosewater": "#f5e0dc",
+    "flamingo": "#f2cdcd",
+    "pink": "#f5c2e7",
+    "mauve": "#cba6f7",
+    "red": "#f38ba8",
+    "maroon": "#eba0b3",
+    "peach": "#fab387",
+    "yellow": "#f9e2af",
+    "green": "#a6e3a1",
+    "teal": "#94e2d5",
+    "sky": "#89dceb",
+    "sapphire": "#74c7ec",
+    "blue": "#89b4fa",
+    "lavender": "#b4befe"
+  },
+  "fonts": {
+    "title": "3270 Nerd Font Propo",
+    "body": "IBM Plex Sans"
+  },
+  "grid": {
+    "color": "#4d4338",
+    "alpha": 0.7
+  }
+}

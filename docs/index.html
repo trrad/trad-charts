@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>trad-charts</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a0f1f;
+      color: #e8e3ed;
+      font-family: 'IBM Plex Sans', sans-serif;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    header {
+      margin-bottom: 48px;
+      border-bottom: 1px solid #33213f;
+      padding-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      color: #a297a8;
+      font-size: 15px;
+    }
+
+    nav {
+      margin-top: 16px;
+      display: flex;
+      gap: 24px;
+    }
+
+    nav a {
+      color: #89b4fa;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #d4ccd8;
+    }
+
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section p {
+      color: #a297a8;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .chart-card {
+      background: #150c1a;
+      border: 1px solid #33213f;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .chart-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #d4ccd8;
+      margin-bottom: 4px;
+    }
+
+    .chart-card .desc {
+      font-size: 13px;
+      color: #7a6488;
+      margin-bottom: 16px;
+    }
+
+    pre {
+      background: #0f0812;
+      border: 1px solid #33213f;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #d4ccd8;
+    }
+
+    code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: #cba6f7;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .swatch {
+      border-radius: 6px;
+      padding: 12px 10px 8px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .swatch .name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .swatch .hex { opacity: 0.7; }
+
+    .light-text { color: #e8e3ed; }
+    .dark-text { color: #1a0f1f; }
+
+    footer {
+      border-top: 1px solid #33213f;
+      padding-top: 24px;
+      margin-top: 48px;
+      color: #5a4168;
+      font-size: 13px;
+    }
+
+    footer a { color: #7a6488; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>trad-charts</h1>
+      <p class="tagline">Matplotlib + D3 chart library. Purple chrome with Catppuccin Mocha accents.</p>
+      <nav>
+        <a href="https://github.com/trrad/trad-charts">GitHub</a>
+        <a href="#d3-demo">D3 Demo</a>
+        <a href="#palette">Palette</a>
+        <a href="#install">Install</a>
+      </nav>
+    </header>
+
+    <!-- D3 Demo -->
+    <div class="section" id="d3-demo">
+      <h2>D3 / Interactive</h2>
+      <p>Bayesian posterior visualizations with drag-to-adjust CI bounds, threshold lines, and plain-English tooltips.</p>
+
+      <div class="chart-card">
+        <h3>QuantileDots</h3>
+        <p class="desc">20-dot quantile dotplot with KDE violin overlay, threshold-split coloring</p>
+        <div id="quantile-dots"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>RidgeDotplot</h3>
+        <p class="desc">Multi-variant ridge comparison with draggable CI bounds, dual $/% axes, inline statistics</p>
+        <div id="ridge-dotplot"></div>
+      </div>
+    </div>
+
+    <!-- Palette -->
+    <div class="section" id="palette">
+      <h2>Palette</h2>
+      <p>Purple chrome surfaces derived from <a href="https://tradcliffe.com" style="color:#89b4fa">tradcliffe.com</a>. Data accents from Catppuccin Mocha.</p>
+
+      <h3 style="font-size:14px; color:#7a6488; margin: 16px 0 8px;">Surfaces</h3>
+      <div class="palette-grid">
+        <div class="swatch light-text" style="background:#0f0812"><div class="name">crust</div><div class="hex">#0f0812</div></div>
+        <div class="swatch light-text" style="background:#150c1a"><div class="name">mantle</div><div class="hex">#150c1a</div></div>
+        <div class="swatch light-text" style="background:#1a0f1f"><div class="name">base</div><div class="hex">#1a0f1f</div></div>
+        <div class="swatch light-text" style="background:#251730"><div class="name">surface0</div><div class="hex">#251730</div></div>
+        <div class="swatch light-text" style="background:#33213f"><div class="name">surface1</div><div class="hex">#33213f</div></div>
+        <div class="swatch light-text" style="background:#432d52"><div class="name">surface2</div><div class="hex">#432d52</div></div>
+      </div>
+
+      <h3 style="font-size:14px; color:#7a6488; margin: 16px 0 8px;">Accents</h3>
+      <div class="palette-grid">
+        <div class="swatch dark-text" style="background:#89b4fa"><div class="name">blue</div><div class="hex">#89b4fa</div></div>
+        <div class="swatch dark-text" style="background:#fab387"><div class="name">peach</div><div class="hex">#fab387</div></div>
+        <div class="swatch dark-text" style="background:#a6e3a1"><div class="name">green</div><div class="hex">#a6e3a1</div></div>
+        <div class="swatch dark-text" style="background:#f38ba8"><div class="name">red</div><div class="hex">#f38ba8</div></div>
+        <div class="swatch dark-text" style="background:#f9e2af"><div class="name">yellow</div><div class="hex">#f9e2af</div></div>
+        <div class="swatch dark-text" style="background:#94e2d5"><div class="name">teal</div><div class="hex">#94e2d5</div></div>
+        <div class="swatch dark-text" style="background:#f2cdcd"><div class="name">flamingo</div><div class="hex">#f2cdcd</div></div>
+        <div class="swatch dark-text" style="background:#89dceb"><div class="name">sky</div><div class="hex">#89dceb</div></div>
+        <div class="swatch dark-text" style="background:#cba6f7"><div class="name">mauve</div><div class="hex">#cba6f7</div></div>
+        <div class="swatch dark-text" style="background:#b4befe"><div class="name">lavender</div><div class="hex">#b4befe</div></div>
+      </div>
+    </div>
+
+    <!-- Install -->
+    <div class="section" id="install">
+      <h2>Install</h2>
+
+      <h3 style="font-size:14px; color:#7a6488; margin: 0 0 8px;">Python (matplotlib)</h3>
+<pre>uv add trad-charts --git https://github.com/trrad/trad-charts</pre>
+
+<pre style="margin-top:12px">from trad_charts import apply_theme, get_palette, watermark, TITLE_FONT
+
+apply_theme()
+pal = get_palette()
+
+fig, ax = plt.subplots()
+ax.plot(x, y, color=pal.blue)
+ax.set_title("My Chart", **TITLE_FONT)
+watermark(fig)</pre>
+
+      <h3 style="font-size:14px; color:#7a6488; margin: 24px 0 8px;">D3 (interactive)</h3>
+<pre>import { RidgeDotplot } from 'trad-charts-d3';
+
+const ridge = RidgeDotplot()
+  .width(800)
+  .numDots(20)
+  .showViolin(true);
+
+d3.select('#container')
+  .datum({ variants, threshold: 0.10 })
+  .call(ridge);</pre>
+    </div>
+
+    <footer>
+      <a href="https://github.com/trrad/trad-charts">trrad/trad-charts</a> &middot; MIT
+    </footer>
+  </div>
+
+  <!-- D3 Charts -->
+  <script type="importmap">
+  {
+    "imports": {
+      "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm",
+      "trad-charts-d3": "./trad-charts-d3.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as d3 from 'd3';
+    import { QuantileDots, RidgeDotplot } from 'trad-charts-d3';
+
+    function normalSamples(n, mean, std) {
+      const samples = [];
+      for (let i = 0; i < n; i++) {
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        samples.push(mean + std * z);
+      }
+      return samples;
+    }
+
+    // QuantileDots
+    const qdSamples = normalSamples(5000, 0.08, 0.05);
+    const qd = QuantileDots()
+      .width(900)
+      .height(80)
+      .numDots(20)
+      .showViolin(true);
+
+    d3.select('#quantile-dots')
+      .datum({ samples: qdSamples, threshold: 0 })
+      .call(qd);
+
+    // RidgeDotplot
+    const controlRPU = normalSamples(5000, 12.0, 1.5);
+    const meanControl = d3.mean(controlRPU);
+
+    function makeVariant(name, displayName, liftMean, liftStd, opts = {}) {
+      const liftSamples = normalSamples(5000, liftMean, liftStd);
+      const effectSamples = liftSamples.map(l => l * meanControl);
+      return {
+        name,
+        displayName,
+        samples: liftSamples,
+        effectSamples,
+        controlSamples: controlRPU,
+        userCount: 15000 + Math.floor(Math.random() * 5000),
+        converterCount: 2000 + Math.floor(Math.random() * 1000),
+        ...opts,
+      };
+    }
+
+    const variants = [
+      makeVariant('control', 'Control (baseline)', 0.0, 0.02, { isBaseline: true }),
+      makeVariant('variant_a', 'Variant A \u2014 new checkout', 0.12, 0.04),
+      makeVariant('variant_b', 'Variant B \u2014 upsell modal', 0.05, 0.06),
+    ];
+
+    const ridge = RidgeDotplot()
+      .width(900)
+      .ridgeHeight(120)
+      .numDots(20)
+      .showViolin(true)
+      .showStatistics(true)
+      .showCIBounds(true);
+
+    d3.select('#ridge-dotplot')
+      .datum({ variants, threshold: 0.10 })
+      .call(ridge);
+  </script>
+</body>
+</html>
