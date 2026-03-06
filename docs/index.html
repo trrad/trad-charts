@@ -147,6 +147,21 @@
     }
 
     footer a { color: #7a6488; }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 16px;
+    }
+
+    .chart-grid .chart-card {
+      margin-bottom: 0;
+    }
+
+    .chart-grid .chart-card img {
+      width: 100%;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -156,7 +171,8 @@
       <p class="tagline">Matplotlib + D3 chart library. Purple chrome with Catppuccin Mocha accents.</p>
       <nav>
         <a href="https://github.com/trrad/trad-charts">GitHub</a>
-        <a href="#d3-demo">D3 Demo</a>
+        <a href="#d3-demo">D3 Interactive</a>
+        <a href="#matplotlib">Matplotlib</a>
         <a href="#palette">Palette</a>
         <a href="#install">Install</a>
       </nav>
@@ -177,6 +193,60 @@
         <h3>QuantileDots <span style="font-size:11px; color:#7a6488; font-weight:400;">(standalone component)</span></h3>
         <p class="desc">20-dot quantile dotplot with KDE violin overlay, threshold-split coloring</p>
         <div id="quantile-dots"></div>
+      </div>
+    </div>
+
+    <!-- Matplotlib -->
+    <div class="section" id="matplotlib">
+      <h2>Matplotlib / Static</h2>
+      <p>9 opinionated chart helpers — labeled axes, semantic colors, credible intervals, capped error bars. <code>uv run python examples/showcase.py</code></p>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>forest_plot</h3>
+          <p class="desc">HTE estimates with capped CIs, blue=positive / red=negative</p>
+          <img src="img/forest_plot.png" alt="Forest plot" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>ci_band</h3>
+          <p class="desc">Posterior mean with layered 50%/95% credible bands</p>
+          <img src="img/ci_band.png" alt="CI band" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>posterior_density</h3>
+          <p class="desc">KDE with threshold shading and credible interval</p>
+          <img src="img/posterior_density.png" alt="Posterior density" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>density_compare</h3>
+          <p class="desc">Overlaid KDEs with median lines for multi-variant comparison</p>
+          <img src="img/density_compare.png" alt="Density compare" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>distribution</h3>
+          <p class="desc">Violin+box distribution comparison across scenarios</p>
+          <img src="img/distribution.png" alt="Distribution" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>mcmc_trace</h3>
+          <p class="desc">MCMC trace with burn-in shading, target line, running mean</p>
+          <img src="img/mcmc_trace.png" alt="MCMC trace" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>power_curve</h3>
+          <p class="desc">Power vs sample size with CI ribbon and target line</p>
+          <img src="img/power_curve.png" alt="Power curve" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>grouped_bar</h3>
+          <p class="desc">Grouped bar with automatic width and target line</p>
+          <img src="img/grouped_bar.png" alt="Grouped bar" loading="lazy">
+        </div>
+        <div class="chart-card">
+          <h3>calibration_plot</h3>
+          <p class="desc">CI calibration — nominal vs actual coverage</p>
+          <img src="img/calibration_plot.png" alt="Calibration plot" loading="lazy">
+        </div>
       </div>
     </div>
 
