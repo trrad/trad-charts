@@ -191,10 +191,16 @@ export function ForestPlot() {
           rowGroup.select('.estimate-dot').attr('r', 7);
           rowGroup.select('.ci-whisker').attr('stroke-width', 3);
 
+          const ciIncludesNull = d.ciLower <= effectiveNullValue && d.ciUpper >= effectiveNullValue;
+          const direction = d.estimate >= effectiveNullValue ? 'positive' : 'negative';
+          const confidence = ciIncludesNull
+            ? `CI includes ${effectiveNullValue} \u2014 uncertain direction`
+            : `CI excludes ${effectiveNullValue} \u2014 likely ${direction}`;
+
           const lines: string[] = [
-            `Estimate: ${d.estimate.toFixed(3)}`,
-            `95% CI: [${d.ciLower.toFixed(3)}, ${d.ciUpper.toFixed(3)}]`,
-            d.estimate >= effectiveNullValue ? 'Positive effect' : 'Negative effect',
+            `Best estimate: ${d.estimate >= 0 ? '+' : ''}${d.estimate.toFixed(3)}`,
+            `95% chance between ${d.ciLower >= 0 ? '+' : ''}${d.ciLower.toFixed(3)} and ${d.ciUpper >= 0 ? '+' : ''}${d.ciUpper.toFixed(3)}`,
+            confidence,
           ];
 
           tooltip.show(

@@ -37,8 +37,9 @@ export function DensityCompare() {
   const visibleSeries = new Set<string>();
   let initialized = false;
 
-  // Cached KDE results for hover interpolation
+  // Cached per-series data for rendering + hover
   let cachedKDEs: Map<string, KDEPoint[]> = new Map();
+  let cachedSorted: Map<string, number[]> = new Map();
   let cachedMedians: Map<string, number> = new Map();
   let cachedColors: Map<string, string> = new Map();
 
@@ -75,6 +76,7 @@ export function DensityCompare() {
 
       // Compute KDE and median for each series
       cachedKDEs.clear();
+      cachedSorted.clear();
       cachedMedians.clear();
       cachedColors.clear();
 
@@ -84,6 +86,7 @@ export function DensityCompare() {
         cachedKDEs.set(s.label, kde);
 
         const sorted = [...s.samples].sort((a, b) => a - b);
+        cachedSorted.set(s.label, sorted);
         const mid = Math.floor(sorted.length / 2);
         const median = sorted.length % 2 === 0
           ? (sorted[mid - 1] + sorted[mid]) / 2
@@ -350,14 +353,20 @@ export function DensityCompare() {
             densities.push({ label: s.label, density, color });
           }
 
-          // Tooltip
-          const lines = densities.map(
-            (d) => `<span style="color:${d.color}">\u25CF</span> ${d.label}: ${d.density.toFixed(4)}`
-          );
+          // Tooltip — show tail probabilities, not raw densities
+          const lines: string[] = [];
+          for (const d of densities) {
+            const sorted = cachedSorted.get(d.label)!;
+            const aboveCount = sorted.length - d3.bisectLeft(sorted, xVal);
+            const pctAbove = Math.round((aboveCount / sorted.length) * 100);
+            lines.push(
+              `<span style="color:${d.color}">\u25CF</span> ${d.label}: ${pctAbove}% chance above`
+            );
+          }
 
           tooltip.show(
             {
-              title: `x = ${xVal.toFixed(3)}`,
+              title: `Value: ${xVal.toFixed(3)}`,
               lines,
             },
             event

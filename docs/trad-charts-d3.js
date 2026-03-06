@@ -2208,10 +2208,13 @@ function ForestPlot() {
         const rowGroup = d311.select(this);
         rowGroup.select(".estimate-dot").attr("r", 7);
         rowGroup.select(".ci-whisker").attr("stroke-width", 3);
+        const ciIncludesNull = d.ciLower <= effectiveNullValue && d.ciUpper >= effectiveNullValue;
+        const direction = d.estimate >= effectiveNullValue ? "positive" : "negative";
+        const confidence = ciIncludesNull ? `CI includes ${effectiveNullValue} \u2014 uncertain direction` : `CI excludes ${effectiveNullValue} \u2014 likely ${direction}`;
         const lines = [
-          `Estimate: ${d.estimate.toFixed(3)}`,
-          `95% CI: [${d.ciLower.toFixed(3)}, ${d.ciUpper.toFixed(3)}]`,
-          d.estimate >= effectiveNullValue ? "Positive effect" : "Negative effect"
+          `Best estimate: ${d.estimate >= 0 ? "+" : ""}${d.estimate.toFixed(3)}`,
+          `95% chance between ${d.ciLower >= 0 ? "+" : ""}${d.ciLower.toFixed(3)} and ${d.ciUpper >= 0 ? "+" : ""}${d.ciUpper.toFixed(3)}`,
+          confidence
         ];
         tooltip.show(
           {
@@ -2451,13 +2454,16 @@ function CIBand() {
         const xLabel = isWholeNumbers ? String(Math.round(nearestX)) : nearestX.toFixed(2);
         const narrowLevel = Math.round(ciLevels[0] * 100);
         const wideLevel = Math.round(ciLevels[1] * 100);
+        const fmtVal = (v) => (v >= 0 ? "+" : "") + v.toFixed(3);
         const lines = [
-          `Mean: ${nearestMean.toFixed(3)}`,
-          `${narrowLevel}% CI: [${ciNarrowLower[nearestIdx].toFixed(3)}, ${ciNarrowUpper[nearestIdx].toFixed(3)}]`,
-          `${wideLevel}% CI: [${ciWideLower[nearestIdx].toFixed(3)}, ${ciWideUpper[nearestIdx].toFixed(3)}]`
+          `Best estimate: ${fmtVal(nearestMean)}`,
+          `${narrowLevel}% chance between ${fmtVal(ciNarrowLower[nearestIdx])} and ${fmtVal(ciNarrowUpper[nearestIdx])}`,
+          `${wideLevel}% chance between ${fmtVal(ciWideLower[nearestIdx])} and ${fmtVal(ciWideUpper[nearestIdx])}`
         ];
         if (showTruth && data.truth) {
-          lines.push(`Truth: ${data.truth[nearestIdx].toFixed(3)}`);
+          const diff = nearestMean - data.truth[nearestIdx];
+          const accuracy = Math.abs(diff) < 0.01 ? "spot on" : `off by ${fmtVal(diff)}`;
+          lines.push(`True value: ${fmtVal(data.truth[nearestIdx])} (${accuracy})`);
         }
         tooltip.show(
           {
@@ -2553,6 +2559,7 @@ function DensityCompare() {
   const visibleSeries = /* @__PURE__ */ new Set();
   let initialized = false;
   let cachedKDEs = /* @__PURE__ */ new Map();
+  let cachedSorted = /* @__PURE__ */ new Map();
   let cachedMedians = /* @__PURE__ */ new Map();
   let cachedColors = /* @__PURE__ */ new Map();
   function chart(selection) {
@@ -2580,6 +2587,7 @@ function DensityCompare() {
       const padding = (globalMax - globalMin) * 0.05;
       const domain = [globalMin - padding, globalMax + padding];
       cachedKDEs.clear();
+      cachedSorted.clear();
       cachedMedians.clear();
       cachedColors.clear();
       for (let i = 0; i < series.length; i++) {
@@ -2587,6 +2595,7 @@ function DensityCompare() {
         const kde = computeKDE(s.samples, domain, kdePoints);
         cachedKDEs.set(s.label, kde);
         const sorted = [...s.samples].sort((a, b) => a - b);
+        cachedSorted.set(s.label, sorted);
         const mid = Math.floor(sorted.length / 2);
         const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
         cachedMedians.set(s.label, median);
@@ -2687,12 +2696,18 @@ function DensityCompare() {
           hoverGroup.append("circle").attr("cx", xScale(xVal)).attr("cy", yScale(density)).attr("r", 3).attr("fill", color).attr("stroke", theme.text).attr("stroke-width", 0.5);
           densities.push({ label: s.label, density, color });
         }
-        const lines = densities.map(
-          (d) => `<span style="color:${d.color}">\u25CF</span> ${d.label}: ${d.density.toFixed(4)}`
-        );
+        const lines = [];
+        for (const d of densities) {
+          const sorted = cachedSorted.get(d.label);
+          const aboveCount = sorted.length - d313.bisectLeft(sorted, xVal);
+          const pctAbove = Math.round(aboveCount / sorted.length * 100);
+          lines.push(
+            `<span style="color:${d.color}">\u25CF</span> ${d.label}: ${pctAbove}% chance above`
+          );
+        }
         tooltip.show(
           {
-            title: `x = ${xVal.toFixed(3)}`,
+            title: `Value: ${xVal.toFixed(3)}`,
             lines
           },
           event

@@ -358,14 +358,18 @@ export function CIBand() {
           const narrowLevel = Math.round(ciLevels[0] * 100);
           const wideLevel = Math.round(ciLevels[1] * 100);
 
+          const fmtVal = (v: number) => (v >= 0 ? '+' : '') + v.toFixed(3);
+
           const lines: string[] = [
-            `Mean: ${nearestMean.toFixed(3)}`,
-            `${narrowLevel}% CI: [${ciNarrowLower[nearestIdx].toFixed(3)}, ${ciNarrowUpper[nearestIdx].toFixed(3)}]`,
-            `${wideLevel}% CI: [${ciWideLower[nearestIdx].toFixed(3)}, ${ciWideUpper[nearestIdx].toFixed(3)}]`,
+            `Best estimate: ${fmtVal(nearestMean)}`,
+            `${narrowLevel}% chance between ${fmtVal(ciNarrowLower[nearestIdx])} and ${fmtVal(ciNarrowUpper[nearestIdx])}`,
+            `${wideLevel}% chance between ${fmtVal(ciWideLower[nearestIdx])} and ${fmtVal(ciWideUpper[nearestIdx])}`,
           ];
 
           if (showTruth && data.truth) {
-            lines.push(`Truth: ${data.truth[nearestIdx].toFixed(3)}`);
+            const diff = nearestMean - data.truth[nearestIdx];
+            const accuracy = Math.abs(diff) < 0.01 ? 'spot on' : `off by ${fmtVal(diff)}`;
+            lines.push(`True value: ${fmtVal(data.truth[nearestIdx])} (${accuracy})`);
           }
 
           tooltip.show(
