@@ -99,12 +99,17 @@ Bayesian posterior visualizations with drag-to-adjust CI bounds, threshold lines
 
 **[Live demo](https://trrad.github.io/trad-charts/)**
 
+![D3 interactive charts](docs/img/d3-charts.png)
+
 ### Components
 
 | Component | Description |
 |---|---|
-| `QuantileDots` | Quantile dotplot with KDE violin overlay, threshold-split coloring |
 | `RidgeDotplot` | Multi-variant ridge comparison with draggable CI, dual $/% axes |
+| `ForestPlot` | HTE segment estimates with capped CIs, click-to-highlight, semantic coloring |
+| `CIBand` | Posterior mean with layered CI bands, crosshair hover, truth comparison |
+| `DensityCompare` | Overlaid KDE densities with legend toggle, tail-probability tooltips |
+| `QuantileDots` | Quantile dotplot with KDE violin overlay, threshold-split coloring |
 | `DraggableCIBounds` | Interactive CI bound handles |
 | `ThresholdLine` | Draggable threshold reference line |
 | `Tooltip` | Context-aware tooltip with plain-English probability statements |
