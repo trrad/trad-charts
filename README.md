@@ -99,7 +99,9 @@ Bayesian posterior visualizations with drag-to-adjust CI bounds, threshold lines
 
 **[Live demo](https://trrad.github.io/trad-charts/)**
 
-![D3 interactive charts](docs/img/d3-charts.png)
+![RidgeDotplot](docs/img/ridgedotplot.png)
+
+![ForestPlot, CIBand, DensityCompare](docs/img/d3-charts.png)
 
 ### Components
 
